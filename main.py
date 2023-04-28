@@ -1,8 +1,9 @@
 import time
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
-from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, Filters
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, Update
+from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, ConversationHandler, CallbackContext, Filters
 from quizz import first_question
+from location import check_location_mxat, location
 
 from text import bolshoi_history, bolshoi_building, bolshoi_history2, rules
 
@@ -18,13 +19,6 @@ LEVEL_COUNTER = 0.0
 menu3_buttons = [[
                   InlineKeyboardButton("Подсказка", callback_data='hint'),
                   InlineKeyboardButton("Показать ответ", callback_data='answer')]]
-
-# Создаем функции для обработки команд
-# def start(update, context):
-#     """Отправляем главное меню"""
-#     reply_markup = InlineKeyboardMarkup(menu1_buttons)
-#     button = ReplyKeyboardMarkup([['/start']], resize_keyboard=True)
-#     update.message.reply_text('Выберите раздел:', reply_markup=reply_markup)
 
 
 def wake_up(update, context):
@@ -93,7 +87,7 @@ def message_handler_lvl_one(update, context):
             reply_markup=reply_markup)
     
     elif str(update.message.text) == 'Перейти дальше 🔒' or str(update.message.text) == 'Перейти дальше 🔑':
-        forward_menu = ReplyKeyboardMarkup([['Вперед!']], resize_keyboard=True)
+        forward_menu = ReplyKeyboardMarkup([['Вперед!']], resize_keyboard=True, one_time_keyboard=True)
         if LEVEL_COUNTER < 1.0:
             update.message.reply_text(text='Ты решил не все загадки!')
         elif LEVEL_COUNTER == 1.0:
@@ -101,8 +95,21 @@ def message_handler_lvl_one(update, context):
             return LEVEL_COUNTER
 
     elif str(update.message.text) == 'Вперед!':
-        update.message.reply_text(text=f'Молодец, ты перешел на второй уровень! \n\nОтправляйся сюда 👇')
-        update.message.reply_location(latitude=55.760073, longitude=37.613144)
+        reply_markup = InlineKeyboardMarkup(menu3_buttons)
+        update.message.reply_text(
+            text=f'Молодец, ты перешел на второй уровень! \n\nСледующая остановка в нашем '
+                 f'маршруте – театр, неподалеку отсюда. Вот, кстати, его символ 👇')
+        update.message.reply_photo(
+            photo='https://www.culture.ru/s/vopros/chayka-mhat/images/tild3462-6532-4261-a536-616335303237__2.png')
+        time.sleep(3)
+        update.message.reply_text(
+            text=f'Догадался, о каком театре идет речь? 🤔 \nОтправь его геопозицию сообщением!',
+            reply_markup=reply_markup)
+        location(Update, CallbackContext)
+        check_location_mxat(Update, CallbackContext)
+        # update.message.reply_text("Отправьте мне свою геолокацию, чтобы я проверил ваше местоположение")
+        # update.message.reply_location(latitude=55.760073, longitude=37.613144)
+        return "LOCATION"
 
     elif str(update.message.text) == 'LEVEL_COUNTER': 
         update.message.reply_text(text=LEVEL_COUNTER, reply_markup=main_menu)  
@@ -192,15 +199,32 @@ def main():
     """Создаем и запускаем бота"""
     global LEVEL_COUNTER
     updater = Updater(TOKEN, use_context=True)
+    dispatcher = updater.dispatcher
 
-    updater.dispatcher.add_handler(CommandHandler('start', wake_up))
-    updater.dispatcher.add_handler(CallbackQueryHandler(menu3_callback, pattern='^(hint|answer)$'))
+    dispatcher.add_handler(CommandHandler('start', wake_up))
+    dispatcher.add_handler(CallbackQueryHandler(menu3_callback, pattern='^(hint|answer)$'))
 
     # if LEVEL_COUNTER < 1.0:
-    updater.dispatcher.add_handler(MessageHandler(Filters.text, message_handler_lvl_one))
-    if (LEVEL_COUNTER >= 1.0) and (LEVEL_COUNTER < 2.0):
-        updater.dispatcher.remove_handler(message_handler_lvl_one)
-    updater.dispatcher.add_handler(MessageHandler(Filters.text, message_handler_lvl_two))
+    dispatcher.add_handler(MessageHandler(Filters.text, message_handler_lvl_one))
+    if (LEVEL_COUNTER >= 1.0) and (LEVEL_COUNTER < 4.0):
+        dispatcher.remove_handler(message_handler_lvl_one)
+    dispatcher.add_handler(MessageHandler(Filters.text, message_handler_lvl_two))
+
+    # conversation = ConversationHandler(
+    #     entry_points=[CommandHandler('start', wake_up)],
+    #     states={
+        
+    #     }
+    #     fallbacks=[]
+    # )
+    # dispatcher.add_handler(conversation)
+
+    location_handler = MessageHandler(Filters.location, location)
+    dispatcher.add_handler(ConversationHandler(
+        entry_points=[location_handler],
+        states={"LOCATION": [location_handler]},
+        fallbacks=[]
+    ))
 
     updater.start_polling()
     updater.idle()
