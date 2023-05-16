@@ -1,4 +1,5 @@
 import time
+import sqlite3
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, Update
 from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, ConversationHandler, CallbackContext, Filters
@@ -15,6 +16,13 @@ load_dotenv()
 TOKEN = os.getenv('TOKEN')
 
 LEVEL_COUNTER = 0.0
+
+# Подключение к базе данных SQLite
+conn = sqlite3.connect('scores.db')
+c = conn.cursor()
+
+c.execute('''CREATE TABLE IF NOT EXISTS scores
+             (user_id INTEGER PRIMARY KEY, score INTEGER)''')
 
 menu3_buttons = [[
                   InlineKeyboardButton("Подсказка", callback_data='hint'),

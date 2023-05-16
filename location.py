@@ -1,6 +1,6 @@
+from geopy import distance
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
-from geopy import distance
 
 # Функция для проверки местоположения пользователя
 def check_location_mxat(update: Update, context: CallbackContext) -> None:
