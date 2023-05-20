@@ -40,8 +40,8 @@ def get_building_score(user_id):
         return None  
 
 
-main_menu_closed = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔒'], ['Узнать счет']], resize_keyboard=True)
-main_menu_open = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔑'], ['Узнать счет']], resize_keyboard=True)
+main_menu_closed = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔒']], resize_keyboard=True)
+main_menu_open = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔑']], resize_keyboard=True)
 
 
 def wake_up(update, context):
@@ -70,6 +70,18 @@ def intro(update, context):
     elif str(update.message.text) == 'Правила 📚':
         update.message.reply_text(text=rules)
 
+unit_menu_quizz = ReplyKeyboardMarkup([['Загадка'], ['Назад']], resize_keyboard=True)
+unit_menu_wo_quizz = ReplyKeyboardMarkup([['Назад']], resize_keyboard=True)
+
+def score(user_id):
+    if get_building_score(user_id) == 1.0:
+        building_score='Загадка на местности: ✅'
+    else: building_score='Загадка на местности: ❌'
+    if get_history_score(user_id) == 1.0:
+        history_score='Загадка на историю: ✅'
+    else: history_score='Загадка на историю: ❌' 
+    return f'{history_score} \n{building_score}'  
+
 
 def main_menu(update, context):
     """Главное меню уровня"""
@@ -82,9 +94,9 @@ def main_menu(update, context):
 
     if str(update.message.text) == 'История 📜':
         if get_history_score(user_id) < 1.0:
-            history_menu = ReplyKeyboardMarkup([['Загадка'], ['Назад']], resize_keyboard=True)
+            history_menu = unit_menu_quizz
         else: 
-            history_menu = ReplyKeyboardMarkup([['Назад']], resize_keyboard=True)
+            history_menu = unit_menu_wo_quizz
         update.message.reply_text(text='Узнаем немного про историю!', reply_markup=history_menu)
         time.sleep(1)
         update.message.reply_text(text=f'{bolshoi_history_text}')
@@ -97,9 +109,9 @@ def main_menu(update, context):
 
     elif str(update.message.text) == 'Здание 🏛️':
         if get_building_score(user_id) < 1.0:
-            building_menu = ReplyKeyboardMarkup([['Загадка'], ['Назад']], resize_keyboard=True)
+            building_menu = unit_menu_quizz
         else:
-            building_menu = ReplyKeyboardMarkup([['Назад']], resize_keyboard=True)
+            building_menu = unit_menu_wo_quizz
         update.message.reply_text(text='Узнаем немного про здание!', reply_markup=building_menu)
         update.message.reply_text(
             text=f'{bolshoi_building_text}', 
@@ -112,20 +124,21 @@ def main_menu(update, context):
     elif str(update.message.text) == 'Перейти дальше 🔒' or str(update.message.text) == 'Перейти дальше 🔑':
         forward_menu = ReplyKeyboardMarkup([['Вперед!']], resize_keyboard=True, one_time_keyboard=True)
         if get_building_score(user_id) < 1.0 or get_history_score(user_id) < 1.0:
-            update.message.reply_text(text='Ты решил не все загадки!')
+            user_score = score(user_id)
+            update.message.reply_text(text=f'Ты решил не все загадки! \n\n{user_score}')
         elif get_building_score(user_id) == 1.0 and get_history_score(user_id) == 1.0:
             update.message.reply_text(text='Отлично! Идем дальше', reply_markup=forward_menu)
             return 'LEVEL_END'
 
-    elif str(update.message.text) == 'Узнать счет':
-        if get_building_score(user_id) == 1.0:
-            building_score='Загадка на местности: ✅'
-        else: building_score='Загадка на местности: ❌'
-        if get_history_score(user_id) == 1.0:
-            history_score='Загадка на историю: ✅'
-        else: history_score='Загадка на историю: ❌'   
-        update.message.reply_text(text=f'Давай посмотрим, сколько загадок ты решил! \n\n{history_score} \n{building_score}', 
-                                  reply_markup=main_menu)
+    # elif str(update.message.text) == 'Узнать счет':
+    #     if get_building_score(user_id) == 1.0:
+    #         building_score='Загадка на местности: ✅'
+    #     else: building_score='Загадка на местности: ❌'
+    #     if get_history_score(user_id) == 1.0:
+    #         history_score='Загадка на историю: ✅'
+    #     else: history_score='Загадка на историю: ❌'   
+    #     update.message.reply_text(text=f'Давай посмотрим, сколько загадок ты решил! \n\n{history_score} \n{building_score}', 
+    #                               reply_markup=main_menu)
 
     else: update.message.reply_text(text=f'Прости, я тебя не понял 🥺')
 
@@ -189,7 +202,7 @@ def bolshoi_history_quizz(update, context):
         c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = ?", (user_id,))
         conn.commit()
         c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(response)
+        update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
         return 'BOLSHOI_HISTORY'
     update.message.reply_text(response)
 
@@ -227,7 +240,7 @@ def bolshoi_building_quizz(update, context):
         c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = ?", (user_id,))
         conn.commit()
         c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(response)
+        update.message.reply_text(response, reply_markup=unit_menu_wo_quizz)
         return 'BOLSHOI_BUILDING'
     update.message.reply_text(response)
 
@@ -293,6 +306,9 @@ def location_quizz_menu_callback(update, context):
             text=f'<tg-spoiler>Ответ: МХТ им. Чехова</tg-spoiler>', parse_mode='HTML')
 
 def cancel(update, context):
+    user_id = update.effective_chat.id
+    c.execute('''DELETE FROM scores
+                 WHERE user_id = ?''', (user_id,))
     update.message.reply_text(text='До встречи!', reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
@@ -306,18 +322,18 @@ def main():
         entry_points=[CommandHandler('start', wake_up)],
         states={
             'INTRO': [MessageHandler(Filters.regex('^(Правила 📚|Начать путешествие 🎭)$'), intro)],
-            'MAIN_MENU': [MessageHandler(Filters.text, main_menu)],
-            'BOLSHOI_HISTORY': [MessageHandler(Filters.text, bolshoi_history)],
-            'BOLSHOI_BUILDING': [MessageHandler(Filters.text, bolshoi_building)],
+            'MAIN_MENU': [MessageHandler(Filters.text & ~Filters.command, main_menu)],
+            'BOLSHOI_HISTORY': [MessageHandler(Filters.text & ~Filters.command, bolshoi_history)],
+            'BOLSHOI_BUILDING': [MessageHandler(Filters.text & ~Filters.command, bolshoi_building)],
             'HISTORY_QUIZZ': [
                         CallbackQueryHandler(history_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text, bolshoi_history_quizz)],
+                        MessageHandler(Filters.text & ~Filters.command, bolshoi_history_quizz)],
             'BUILDING_QUIZZ': [
                         CallbackQueryHandler(building_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text, bolshoi_building_quizz)],
+                        MessageHandler(Filters.text & ~Filters.command, bolshoi_building_quizz)],
             'LEVEL_END': [
                         CallbackQueryHandler(location_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text, level_end),]
+                        MessageHandler(Filters.text & ~Filters.command, level_end),]
         },
         fallbacks=[CommandHandler('cancel', cancel)],
         per_chat=True,
