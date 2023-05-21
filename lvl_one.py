@@ -1,21 +1,13 @@
 import time
 import sqlite3
-import warnings
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, Update, ReplyKeyboardRemove
-from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, ConversationHandler, CallbackContext, Filters
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from quizz import bolshoi_history_question, bolshoi_building_question
-from location import check_location_mxat, location
+from location import check_location_mxat
 from text import (bolshoi_history_text, bolshoi_building_text, 
                   bolshoi_history_url, bolshoi_building_url,
                   rules, rules_url, louis_1,
                   louis_2, louis_3, louis_4, louis_5, louis_6)
-
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-TOKEN = os.getenv('TOKEN')
 
 # Подключение к базе данных SQLite
 conn = sqlite3.connect('scores.db', check_same_thread=False)
@@ -45,25 +37,6 @@ def get_building_score(user_id):
 main_menu_closed = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔒']], resize_keyboard=True)
 main_menu_open = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔑']], resize_keyboard=True)
 
-
-def wake_up(update, context):
-    """Функция, запускающая бота"""
-    user_id = update.effective_chat.id
-
-    # Проверяем, есть ли у пользователя запись в базе данных, если нет, то создаем ее со значением 0
-    c.execute("INSERT OR IGNORE INTO scores (user_id, history_score, building_score) VALUES (?, 0, 0)", (user_id,))
-    conn.commit()   
-
-    chat = update.effective_chat
-    name = update.message.chat.first_name
-    button = ReplyKeyboardMarkup([['Прочитать правила 📝'], ['Начать путешествие 🎭']], resize_keyboard=True)
-
-    context.bot.send_message(
-        chat_id=chat.id,
-        text='Привет, {}! Давайте начнем наше театральное приключение, стартовая точка которого — Большой театр. Вы можете сначала прочитать правила или же сразу приступить к квесту. Выберите, что хочешь 👇'.format(name),
-        reply_markup=button
-    )
-    return 'INTRO'
 
 def intro(update, context):
     if str(update.message.text) == 'Начать путешествие 🎭':
@@ -100,7 +73,7 @@ def intro_four(update, context):
         update.message.reply_text(text=louis_6)
         time.sleep(3)
         update.message.reply_text(text='Про что хотите узнать: историю театра или здание?', reply_markup=main_menu_closed)
-        return 'MAIN_MENU'
+        return 'BOLSHOI_MAIN_MENU'
 
 unit_menu_quizz = ReplyKeyboardMarkup([['Загадка'], ['Назад']], resize_keyboard=True)
 unit_menu_wo_quizz = ReplyKeyboardMarkup([['Назад']], resize_keyboard=True)
@@ -115,7 +88,7 @@ def score(user_id):
     return f'{history_score} \n{building_score}'  
 
 
-def main_menu(update, context):
+def bolshoi_main_menu(update, context):
     """Главное меню уровня"""
     user_id = update.effective_chat.id
 
@@ -153,7 +126,7 @@ def main_menu(update, context):
             update.message.reply_text(
                 text='Большому театру — большая история. Поздравляю, вы перешли на второй уровень! И нам нужно двигаться дальше.', 
                 reply_markup=forward_menu)
-            return 'LEVEL_END'
+            return 'LEVEL_ONE_END'
 
     else: update.message.reply_text(text=f'Прости, я тебя не понял 🥺')
 
@@ -172,13 +145,13 @@ def bolshoi_history(update, context):
         update.message.reply_text(
             text=f"Не подскажете, под каким названием театр прослужил меньше всего? \n\nПиши ответ внизу 👇",
             reply_markup=reply_markup)
-        return 'HISTORY_QUIZZ'
+        return 'BOLSHOI_HISTORY_QUIZZ'
     elif str(update.message.text) == 'Назад':
         if get_building_score(user_id) == 1.0 and get_history_score(user_id) == 1.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выбери, про что хочешь узнать!', reply_markup=main_menu)
-        return 'MAIN_MENU'
+        return 'BOLSHOI_MAIN_MENU'
     else: update.message.reply_text(text=f'Прости, я тебя не понял 🥺')
 
 
@@ -191,13 +164,13 @@ def bolshoi_building(update, context):
         update.message.reply_text(
             text=f"Интересно, какое максимальное число можно увидеть на табличке с номером подъезда театра? Пишите ответ внизу 👇",
             reply_markup=reply_markup)
-        return 'BUILDING_QUIZZ'
+        return 'BOLSHOI_BUILDING_QUIZZ'
     elif str(update.message.text) == 'Назад':
         if get_building_score(user_id) == 1.0 and get_history_score(user_id) == 1.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выбери, про что хочешь узнать!', reply_markup=main_menu)
-        return 'MAIN_MENU'
+        return 'BOLSHOI_MAIN_MENU'
     else: update.message.reply_text(text=f'Прости, я тебя не понял 🥺')
 
 
@@ -211,7 +184,7 @@ def bolshoi_history_quizz(update, context):
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выбери, про что хочешь узнать!', reply_markup=main_menu)
-        return 'MAIN_MENU'
+        return 'BOLSHOI_MAIN_MENU'
     response = bolshoi_history_question(text)
     if response == 'Merci! Все так 🥳':
         c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = ?", (user_id,))
@@ -249,7 +222,7 @@ def bolshoi_building_quizz(update, context):
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выбери, про что хочешь узнать!', reply_markup=main_menu)
-        return 'MAIN_MENU'
+        return 'BOLSHOI_MAIN_MENU'
     response = bolshoi_building_question(text)
     if response == 'Bravo! Из вас хороший математик 🥳':
         c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = ?", (user_id,))
@@ -278,12 +251,12 @@ def building_quizz_menu_callback(update, context):
             text=f'Ответ: <tg-spoiler>22</tg-spoiler>', parse_mode='HTML')
 
 
-def location_callback(update: Update, context: CallbackContext) -> None:
+def location_callback(update, context):
     """Обработчик геолокации"""
     check_location_mxat(update, context)
 
 
-def level_end(update, context):
+def level_one_end(update, context):
     """Обработчик перехода на новый уровень"""
     reply_markup = InlineKeyboardMarkup(quizz_menu)
     if str(update.message.text) == 'Вперед!':
@@ -295,7 +268,7 @@ def level_end(update, context):
         update.message.reply_text(
             text=f'Догадался, о каком театре идет речь? 🤔 \nОтправь его геопозицию сообщением!',
             reply_markup=reply_markup)
-        return "LOCATION"
+        return "BOLSHOI_LOCATION"
     else: update.message.reply_text(text=f'Прости, я тебя не понял 🥺')
 
 def location_quizz_menu_callback(update, context):
@@ -313,57 +286,4 @@ def location_quizz_menu_callback(update, context):
         query.edit_message_text(
             text=f'Догадался, о каком театре идет речь? 🤔 \nОтправь его геопозицию сообщением!')
         query.message.reply_text(
-            text=f'<tg-spoiler>Ответ: МХТ им. Чехова</tg-spoiler>', parse_mode='HTML')
-
-
-def cancel(update, context):
-    """Завершение бота"""
-    user_id = update.effective_chat.id
-    c.execute('''DELETE FROM scores
-                 WHERE user_id = ?''', (user_id,))
-    update.message.reply_text(text='До встречи!', reply_markup=ReplyKeyboardRemove())
-    return ConversationHandler.END
-
-
-def main():
-    """Создаем и запускаем бот"""
-    updater = Updater(TOKEN, use_context=True)
-    dispatcher = updater.dispatcher
-
-    conversation = ConversationHandler(
-        entry_points=[CommandHandler('start', wake_up)],
-        states={
-            'INTRO': [MessageHandler(Filters.regex('^(Прочитать правила 📝|Начать путешествие 🎭)$'), intro)],
-            'INTRO_2': [MessageHandler(Filters.text & ~Filters.command, intro_two)],
-            'INTRO_3': [MessageHandler(Filters.text & ~Filters.command, intro_three)],
-            'INTRO_4': [MessageHandler(Filters.text & ~Filters.command, intro_four)],
-            'MAIN_MENU': [MessageHandler(Filters.text & ~Filters.command, main_menu)],
-            'BOLSHOI_HISTORY': [MessageHandler(Filters.text & ~Filters.command, bolshoi_history)],
-            'BOLSHOI_BUILDING': [MessageHandler(Filters.text & ~Filters.command, bolshoi_building)],
-            'HISTORY_QUIZZ': [
-                        CallbackQueryHandler(history_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text & ~Filters.command, bolshoi_history_quizz)],
-            'BUILDING_QUIZZ': [
-                        CallbackQueryHandler(building_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text & ~Filters.command, bolshoi_building_quizz)],
-            'LEVEL_END': [
-                        CallbackQueryHandler(location_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text & ~Filters.command, level_end)],
-            'LOCATION': [MessageHandler(Filters.location & ~Filters.command, location_callback)],
-        },
-        fallbacks=[CommandHandler('cancel', cancel)],
-        per_chat=True,
-        # per_message=True,
-    )
-
-    dispatcher.add_handler(conversation)
-
-    updater.start_polling()
-    updater.idle()
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    main()
-
-if __name__ == '__main__':
-    main()
+            text=f'Ответ: <tg-spoiler>МХТ им. Чехова</tg-spoiler>', parse_mode='HTML')
