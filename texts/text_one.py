@@ -1,7 +1,14 @@
+rules_url = 'https://telegra.ph/Instrukciya-po-prohozhdeniyu-05-21'
 bolshoi_history_url = 'https://telegra.ph/Bolshoj-teatr-istoriya-05-19'
 bolshoi_building_url = 'https://telegra.ph/Bolshoj-teatr-zdanie-05-20'
-rules_url = 'https://telegra.ph/Bolshoj-teatr-istoriya-05-19'
-
+mxat_history_url = 'https://telegra.ph/MHT-im-CHehova-istoriya-05-21'
+mxat_building_url = 'https://telegra.ph/MHT-im-CHehova-zdanie-05-21'
+nations_history_url = 'https://telegra.ph/Teatr-Nacij-istoriya-05-21'
+nations_building_url = 'https://telegra.ph/Teatr-Nacij-zdanie-05-21'
+lenkom_history_url = 'https://telegra.ph/Lenkom-istoriya-05-21'
+lenkom_building_url = 'https://telegra.ph/Lenkom-zdanie-05-21'
+electro_history_url = 'https://telegra.ph/EHlektroteatr-istoriya-05-21'
+electro_building_url = 'https://telegra.ph/EHlektroteatr-zdanie-05-21'
 
 louis_1 = f'Извините за беспокойство, но вы выглядите как человек, который' \
           f' точно может помочь мне. Вы ведь интересуетесь театрами?'
@@ -31,8 +38,12 @@ bolshoi_history_text = f'Знали ли вы, что Большой театр 
 bolshoi_building_text = f'Как совершенствовалось здание Большого и при чем тут ламповщики' \
                         f' и скрипка — узнайте в статье про архитектуру театра ⬇️'
 
-level_one_end = f'Следующий театр носит имя русского драматурга. В одном из названий его произведений' \
+level_one_end = f'Театр носит имя русского драматурга. В одном из названий его произведений' \
                 f' фигурирует птица, которая впоследствии стала символом театра. Догадались, о каком' \
                 f' театре речь? Отправьте его геопозицию в сообщении!'
+
+mxat_transition_text = f'Я тут узнал очень intéressant факт! Оказывается, Константин Станиславский,' \
+     f' один из основателей МХТ, руководил оперной студией при Большом, которая впоследствии' \
+     f' превратилась в Музыкальный театр им. К.С. Станиславского и Вл.И. Немировича-Данченко.'
 
 rules = f'Для комфортного прохождения мы составили подробную инструкцию. Переходите по ссылке, чтобы ознакомиться ⬇️'
