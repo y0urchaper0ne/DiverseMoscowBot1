@@ -2,9 +2,9 @@ import time
 import sqlite3
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
-from quizz import mxat_history_question, mxat_building_question, mxat_to_nations_question
+from quizz import nations_building_question, nations_history_question, nations_to_lenkom_question
 from location import check_location_nations
-from texts.text_two import *
+from texts.text_three import *
 from levels.lvl_one import (get_building_score, get_history_score, 
                             main_menu_closed, main_menu_open, 
                             unit_menu_quizz, unit_menu_wo_quizz,
@@ -37,10 +37,10 @@ def nations_transition(update, context):
         c.execute("UPDATE scores SET level = level + 1.0 WHERE user_id = ?", (user_id,))
         conn.commit()
         c.execute("SELECT level FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(text=f'{mxat_beginning}')
+        update.message.reply_text(text=f'{nations_beginning}')
         time.sleep(3)
         update.message.reply_text(
-            text='Предлагаю начать знакомство с театром — выбирайте, история или здание?', 
+            text='C чего начнем в этот раз?', 
             reply_markup=main_menu_closed)
         return 'NATIONS_MAIN_MENU'
     update.message.reply_text(response)
@@ -58,8 +58,8 @@ def nations_main_menu(update, context):
         update.message.reply_text(text='Узнаем немного про историю!', reply_markup=history_menu)
         time.sleep(1)
         update.message.reply_text(
-            text=f'{mxat_history_text}', 
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='История МХТ им. Чехова', url=mxat_history_url)]]),
+            text=f'{nations_history_text}', 
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='История Театра Наций', url=nations_history_url)]]),
             )
         return 'NATIONS_HISTORY'
 
@@ -70,8 +70,8 @@ def nations_main_menu(update, context):
             building_menu = unit_menu_wo_quizz
         update.message.reply_text(text='Узнаем немного про здание!', reply_markup=building_menu)
         update.message.reply_text(
-            text=f'{mxat_building_text}', 
-            reply_markup= InlineKeyboardMarkup([[InlineKeyboardButton(text='Здание МХТ им. Чехова', url=mxat_building_url)]]),
+            text=f'{nations_building_text}', 
+            reply_markup= InlineKeyboardMarkup([[InlineKeyboardButton(text='Здание Театра Наций', url=nations_building_url)]]),
             )
         return 'NATIONS_BUILDING'
       
@@ -80,10 +80,10 @@ def nations_main_menu(update, context):
         if get_building_score(user_id) < 3.0 or get_history_score(user_id) < 3.0:
             user_score = nations_score(user_id)
             update.message.reply_text(text=f'Вы решили не все загадки! \n\n{user_score}')
-        elif get_building_score(user_id) == 3.0 and get_history_score(user_id) == 3.0:
+        elif get_building_score(user_id) >= 3.0 and get_history_score(user_id) >= 3.0:
             update.message.reply_text(
-                text=f'МХТ и правда впечатляет своей историей. Bravo, вы теперь на третьем уровне!' \
-                     f' Однако нужно скорее двигаться к следующей точке.', 
+                text=f'Больше половины нашего promenade уже позади! Вы уже на четвертом уровне, bravo 🥳 \n\n' \
+                     f'Давайте же скорее пойдем к следующей точке.', 
                 reply_markup=forward_menu)
             return 'LEVEL_THREE_END'
 
@@ -97,10 +97,10 @@ def nations_history(update, context):
     if str(update.message.text) == 'Загадка' and get_history_score(user_id) < 3.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/mxat_history.png", "rb"),
-            caption = 'Как вы думаете, из какого спектакля 1899 года данная сцена? Пишите ответ внизу 👇',
+            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/nations_history.png", "rb"),
+            caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
-        return 'MXAT_HISTORY_QUIZZ'
+        return 'NATIONS_HISTORY_QUIZZ'
     elif str(update.message.text) == 'Назад':
         if get_building_score(user_id) == 3.0 and get_history_score(user_id) == 3.0:
             main_menu = main_menu_open
@@ -117,7 +117,7 @@ def nations_building(update, context):
     if str(update.message.text) == 'Загадка' and get_building_score(user_id) < 3.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/mxat_building.jpeg", "rb"),
+            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/nations_building.png", "rb"),
             caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'NATIONS_BUILDING_QUIZZ'
@@ -141,8 +141,8 @@ def nations_history_quizz(update, context):
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
         return 'NATIONS_MAIN_MENU'
-    response = mxat_history_question(text)
-    if response == 'Parfait! Вы абсолютно правы':
+    response = nations_history_question(text)
+    if response == 'Bravo! Все верно 🥳':
         c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = ?", (user_id,))
         conn.commit()
         c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
@@ -159,11 +159,11 @@ def nations_history_quizz_menu_callback(update, context):
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Показать ответ", callback_data='answer')]])
         query.edit_message_reply_markup(reply_markup=reply_markup)
         query.message.reply_text(
-            text='💡 Это одна из известных пьес А.П. Чехова', parse_mode='HTML')    
+            text='💡 Их название отсылает ко времени суток', parse_mode='HTML')    
     elif query.data == 'answer':
         query.edit_message_reply_markup()
         query.message.reply_text(
-            text=f'Ответ: <tg-spoiler>Большой Петровский театр</tg-spoiler>', parse_mode='HTML')
+            text=f'Ответ: <tg-spoiler>Утренники</tg-spoiler>', parse_mode='HTML')
 
 
 def nations_building_quizz(update, context):
@@ -176,8 +176,8 @@ def nations_building_quizz(update, context):
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
         return 'NATIONS_MAIN_MENU'
-    response = mxat_building_question(text)
-    if response == 'Chic! И правда':
+    response = nations_building_question(text)
+    if response == 'Bien! Вы очень внимательны':
         c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = ?", (user_id,))
         conn.commit()
         c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
@@ -194,21 +194,19 @@ def nations_building_quizz_menu_callback(update, context):
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Показать ответ", callback_data='answer')]])
         query.edit_message_reply_markup(reply_markup=reply_markup)
         query.message.reply_text(
-            text='💡 Посмотрите на надпись на двери под горельефом', parse_mode='HTML')    
+            text='💡 Оно показывает направление ветра', parse_mode='HTML')    
     elif query.data == 'answer':
         query.edit_message_reply_markup()
         query.message.reply_text(
-            text=f'Ответ: <tg-spoiler>Малая сцена</tg-spoiler>', parse_mode='HTML')
+            text=f'Ответ: <tg-spoiler>Флюгер</tg-spoiler>', parse_mode='HTML')
 
 
 def level_three_end(update, context):
     """Обработчик перехода на новый уровень"""
     reply_markup = InlineKeyboardMarkup(quizz_menu)
     if str(update.message.text) == 'Вперед!':
-        update.message.reply_text(
-            text=f'Здание следующего театра часто сравнивают с Историческим музеем на Красной площади.')
         update.message.reply_photo(
-            photo='https://enotnavolge.ru/wp-content/uploads/8/9/0/8903d33d25ed472d2ef030141d3490f9.jpeg')
+            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/lenkom_transition.png", "rb"),)
         time.sleep(3)
         update.message.reply_text(
             text=f'Догадались, о каком театре речь? 🤔 \nОтправьте его название в сообщении!',
@@ -221,14 +219,12 @@ def nations_to_lenkom(update, context):
     """Обработчик загадки с Ленкомом"""
     button = ReplyKeyboardMarkup([[KeyboardButton(text='На месте!', request_location=True)]], resize_keyboard=True, one_time_keyboard=True)    
     text = str(update.message.text).lower()
-    response = mxat_to_nations_question(text)
-    if response == 'Génial! Следующая точка — Театр Наций!':
+    response = nations_to_lenkom_question(text)
+    if response == 'Génial! Мы направляемся к Ленкому Марка Захарова!':
         update.message.reply_text(response)
         time.sleep(2)
-        update.message.reply_text(text=f"{nations_transition_text}")
-        time.sleep(3)
         update.message.reply_text(
-            text=nations_transition_text_2,
+            text=lenkom_transition_text,
             reply_markup=button)
         return 'NATIONS_LOCATION'
     update.message.reply_text(response)
@@ -244,9 +240,9 @@ def nations_location_quizz_menu_callback(update, context):
             text=f'Догадались, о каком театре речь? 🤔 \nОтправьте его название в сообщении!',
             reply_markup=reply_markup)
         query.message.reply_text(
-            text=f'💡 Его действующий худрук — Евгений Миронов', parse_mode='HTML')    
+            text=f'💡 Загаданный фильм — «12 стульев»', parse_mode='HTML')    
     elif query.data == 'answer':
         query.edit_message_text(
             text=f'Догадались, о каком театре речь? 🤔 \nОтправьте его название в сообщении!')
         query.message.reply_text(
-            text=f'Ответ: <tg-spoiler>Театр Наций</tg-spoiler>', parse_mode='HTML')
+            text=f'Ответ: <tg-spoiler>Ленком Марка Захарова</tg-spoiler>', parse_mode='HTML')

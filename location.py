@@ -16,8 +16,6 @@ def check_location_mxat(update: Update, context: CallbackContext) -> None:
         return 'True'
     else:
         return "Похоже, вы еще не дошли до театра"
-    
-    # update.message.reply_text(message)
 
 
 def check_location_nations(update: Update, context: CallbackContext) -> None:
@@ -34,8 +32,6 @@ def check_location_nations(update: Update, context: CallbackContext) -> None:
         return 'True'
     else:
         return "Похоже, вы еще не дошли до театра"
-    
-    # update.message.reply_text(message)
 
 
 def check_location_lenkom(update: Update, context: CallbackContext) -> None:
@@ -49,11 +45,9 @@ def check_location_lenkom(update: Update, context: CallbackContext) -> None:
     distance_in_meters = distance.distance(user_location, target_location).m
     
     if distance_in_meters <= 300:
-        message = "Вы на месте!"
+        return "True"
     else:
-        message = "Вы не на месте :("
-    
-    update.message.reply_text(message)
+        return "Вы не на месте :("
 
 
 def check_location_electro(update: Update, context: CallbackContext) -> None:
@@ -67,8 +61,6 @@ def check_location_electro(update: Update, context: CallbackContext) -> None:
     distance_in_meters = distance.distance(user_location, target_location).m
     
     if distance_in_meters <= 300:
-        message = "Вы на месте!"
+        return "True"
     else:
-        message = "Вы не на месте :("
-    
-    update.message.reply_text(message)
+        return "Вы не на месте :("

@@ -1,14 +1,6 @@
 rules_url = 'https://telegra.ph/Instrukciya-po-prohozhdeniyu-05-21'
 bolshoi_history_url = 'https://telegra.ph/Bolshoj-teatr-istoriya-05-19'
 bolshoi_building_url = 'https://telegra.ph/Bolshoj-teatr-zdanie-05-20'
-mxat_history_url = 'https://telegra.ph/MHT-im-CHehova-istoriya-05-21'
-mxat_building_url = 'https://telegra.ph/MHT-im-CHehova-zdanie-05-21'
-nations_history_url = 'https://telegra.ph/Teatr-Nacij-istoriya-05-21'
-nations_building_url = 'https://telegra.ph/Teatr-Nacij-zdanie-05-21'
-lenkom_history_url = 'https://telegra.ph/Lenkom-istoriya-05-21'
-lenkom_building_url = 'https://telegra.ph/Lenkom-zdanie-05-21'
-electro_history_url = 'https://telegra.ph/EHlektroteatr-istoriya-05-21'
-electro_building_url = 'https://telegra.ph/EHlektroteatr-zdanie-05-21'
 
 louis_1 = f'Извините за беспокойство, но вы выглядите как человек, который' \
           f' точно может помочь мне. Вы ведь интересуетесь театрами?'

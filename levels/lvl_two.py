@@ -80,7 +80,7 @@ def mxat_main_menu(update, context):
         if get_building_score(user_id) < 2.0 or get_history_score(user_id) < 2.0:
             user_score = mxat_score(user_id)
             update.message.reply_text(text=f'Вы решили не все загадки! \n\n{user_score}')
-        elif get_building_score(user_id) == 2.0 and get_history_score(user_id) == 2.0:
+        elif get_building_score(user_id) >= 2.0 and get_history_score(user_id) >= 2.0:
             update.message.reply_text(
                 text=f'МХТ и правда впечатляет своей историей. Bravo, вы теперь на третьем уровне!' \
                      f' Однако нужно скорее двигаться к следующей точке.', 
@@ -98,7 +98,7 @@ def mxat_history(update, context):
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
             photo=open("/Users/ilya/Desktop/hsetelegrambot/media/mxat_history.png", "rb"),
-            caption = 'Как вы думаете, из какого спектакля 1899 года данная сцена? Пишите ответ внизу 👇',
+            caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'MXAT_HISTORY_QUIZZ'
     elif str(update.message.text) == 'Назад':

@@ -1,4 +1,6 @@
 import sqlite3
+# import mysql.connector
+# import pymysql
 
 import warnings
 
@@ -28,7 +30,22 @@ from levels.lvl_three import (nations_transition, nations_building,
                               nations_history_quizz_menu_callback,
                               nations_location_quizz_menu_callback,
                               nations_history_quizz, nations_main_menu,
-                              level_three_end,
+                              level_three_end, nations_to_lenkom,
+                              )
+from levels.lvl_four import (lenkom_transition, lenkom_building,
+                              lenkom_building_quizz, lenkom_history,
+                              lenkom_building_quizz_menu_callback, 
+                              lenkom_history_quizz_menu_callback,
+                              lenkom_location_quizz_menu_callback,
+                              lenkom_history_quizz, lenkom_main_menu,
+                              level_four_end, lenkom_to_electro,
+                              )
+from levels.lvl_five import (electro_transition, electro_building,
+                              electro_building_quizz, electro_history,
+                              electro_building_quizz_menu_callback, 
+                              electro_history_quizz_menu_callback,
+                              electro_history_quizz, electro_main_menu,
+                              level_five_end,
                               )
 
 import os
@@ -36,6 +53,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
+
+# conn = mysql.connector.connect(
+#     host="188.120.245.105",
+#     user="y0urchaper0ne",
+#     password="96348916318uuf",
+#     database="scores"
+# )
 
 conn = sqlite3.connect('scores.db', check_same_thread=False)
 c = conn.cursor()
@@ -63,10 +87,34 @@ def start(update, context):
 
     context.bot.send_message(
         chat_id=chat.id,
-        text='Привет, {}! Давайте начнем наше театральное приключение, стартовая точка которого — Большой театр. Вы можете сначала прочитать правила или же сразу приступить к квесту. Выберите, что хотите 👇'.format(name),
+        text=f'Привет, {name}! Давайте начнем наше театральное приключение, ' \
+            f'стартовая точка которого — Большой театр. Вы можете сначала ' \
+            f'прочитать правила или же сразу приступить к квесту. Выберите, что хотите 👇',
         reply_markup=button
     )
     return 'INTRO'
+
+
+def feedback(update, context):
+    """Отправка фидбэка"""
+    text = str(update.message.text).lower()
+    name = update.message.chat.first_name
+    context.bot.send_message(
+        chat_id=380077303,
+        text=f'Фидбэк от пользователя {name}: \n\n{text}',
+    )
+    update.message.reply_text(
+        text='Спасибо!',)
+
+
+def feedback_receiver(update, context):
+    """Получение фидбэка"""
+    chat = update.effective_chat
+    context.bot.send_message(
+        chat_id=chat.id,
+        text=f'Здесь вы можете отправить любой фидбэк по квесту 👇',
+    )
+    return 'FEEDBACK'
 
 
 def cancel(update, context):
@@ -74,8 +122,11 @@ def cancel(update, context):
     user_id = update.effective_chat.id
     c.execute('''DELETE FROM scores
                  WHERE user_id = ?''', (user_id,))
+    conn.commit()
     update.message.reply_text(
         text='До встречи!', reply_markup=ReplyKeyboardRemove())
+    # c.close()
+    # conn.close()
     return ConversationHandler.END
 
 
@@ -89,7 +140,9 @@ def restart(update, context):
 
     context.bot.send_message(
         chat_id=chat.id,
-        text='Привет, {}! Давайте начнем наше театральное приключение, стартовая точка которого — Большой театр. Вы можете сначала прочитать правила или же сразу приступить к квесту. Выберите, что хотите 👇'.format(name),
+        text=f'Привет, {name}! Давайте начнем наше театральное приключение, ' \
+            f'стартовая точка которого — Большой театр. Вы можете сначала ' \
+            f'прочитать правила или же сразу приступить к квесту. Выберите, что хотите 👇',
         reply_markup=button
     )
     return 'INTRO'
@@ -103,6 +156,7 @@ def main():
     conversation = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
+            'FEEDBACK': [MessageHandler(Filters.text & ~Filters.command, feedback)],
             #ВСТУПЛЕНИЕ
             'INTRO': [MessageHandler(Filters.regex('^(Прочитать правила 📝|Начать путешествие 🎭)$'), intro)],
             'LEVEL_CHOICE': [MessageHandler(Filters.text & ~Filters.command, level_choice)],
@@ -157,45 +211,49 @@ def main():
                         CallbackQueryHandler(nations_building_quizz_menu_callback, pattern='^(hint|answer)$'),
                         MessageHandler(Filters.text & ~Filters.command, nations_building_quizz)],
             'LEVEL_THREE_END': [MessageHandler(Filters.text & ~Filters.command, level_three_end)],
+            'NATIONS_TO_LENKOM_TRANSITION': [
+                CallbackQueryHandler(nations_location_quizz_menu_callback, pattern='^(hint|answer)$'),
+                MessageHandler(Filters.text & ~Filters.command, nations_to_lenkom)],
             'NATIONS_LOCATION': [
                         CallbackQueryHandler(nations_location_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.location & ~Filters.command, mxat_transition)],
+                        MessageHandler(Filters.location & ~Filters.command, lenkom_transition)],
 
             #ЛЕНКОМ
-            'LENKOM_TRANSITION': [MessageHandler(Filters.text & ~Filters.command, mxat_transition)],
-            'LENKOM_MAIN_MENU': [MessageHandler(Filters.text & ~Filters.command, mxat_main_menu)],
-            'LENKOM_HISTORY': [MessageHandler(Filters.text & ~Filters.command, mxat_history)],
-            'LENKOM_BUILDING': [MessageHandler(Filters.text & ~Filters.command, mxat_building)],
+            'LENKOM_TRANSITION': [MessageHandler(Filters.text & ~Filters.command, lenkom_transition)],
+            'LENKOM_MAIN_MENU': [MessageHandler(Filters.text & ~Filters.command, lenkom_main_menu)],
+            'LENKOM_HISTORY': [MessageHandler(Filters.text & ~Filters.command, lenkom_history)],
+            'LENKOM_BUILDING': [MessageHandler(Filters.text & ~Filters.command, lenkom_building)],
             'LENKOM_HISTORY_QUIZZ': [
-                        CallbackQueryHandler(mxat_history_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text & ~Filters.command, mxat_history_quizz)],
+                        CallbackQueryHandler(lenkom_history_quizz_menu_callback, pattern='^(hint|answer)$'),
+                        MessageHandler(Filters.text & ~Filters.command, lenkom_history_quizz)],
             'LENKOM_BUILDING_QUIZZ': [
-                        CallbackQueryHandler(mxat_building_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text & ~Filters.command, mxat_building_quizz)],
-            'LEVEL_FOUR_END': [MessageHandler(Filters.text & ~Filters.command, level_one_end)],
+                        CallbackQueryHandler(lenkom_building_quizz_menu_callback, pattern='^(hint|answer)$'),
+                        MessageHandler(Filters.text & ~Filters.command, lenkom_building_quizz)],
+            'LEVEL_FOUR_END': [MessageHandler(Filters.text & ~Filters.command, level_four_end)],
+            'LENKOM_TO_LENKOM_TRANSITION': [
+                CallbackQueryHandler(lenkom_location_quizz_menu_callback, pattern='^(hint|answer)$'),
+                MessageHandler(Filters.text & ~Filters.command, lenkom_to_electro)],
             'LENKOM_LOCATION': [
-                        CallbackQueryHandler(mxat_location_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.location & ~Filters.command, mxat_transition)],
+                        CallbackQueryHandler(lenkom_location_quizz_menu_callback, pattern='^(hint|answer)$'),
+                        MessageHandler(Filters.location & ~Filters.command, electro_transition)],
 
             #ЭЛЕКТРОТЕАТР
-            'ELECTRO_TRANSITION': [MessageHandler(Filters.text & ~Filters.command, mxat_transition)],
-            'ELECTRO_MAIN_MENU': [MessageHandler(Filters.text & ~Filters.command, mxat_main_menu)],
-            'ELECTRO_HISTORY': [MessageHandler(Filters.text & ~Filters.command, mxat_history)],
-            'ELECTRO_BUILDING': [MessageHandler(Filters.text & ~Filters.command, mxat_building)],
+            'ELECTRO_TRANSITION': [MessageHandler(Filters.text & ~Filters.command, electro_transition)],
+            'ELECTRO_MAIN_MENU': [MessageHandler(Filters.text & ~Filters.command, electro_main_menu)],
+            'ELECTRO_HISTORY': [MessageHandler(Filters.text & ~Filters.command, electro_history)],
+            'ELECTRO_BUILDING': [MessageHandler(Filters.text & ~Filters.command, electro_building)],
             'ELECTRO_HISTORY_QUIZZ': [
-                        CallbackQueryHandler(mxat_history_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text & ~Filters.command, mxat_history_quizz)],
+                        CallbackQueryHandler(electro_history_quizz_menu_callback, pattern='^(hint|answer)$'),
+                        MessageHandler(Filters.text & ~Filters.command, electro_history_quizz)],
             'ELECTRO_BUILDING_QUIZZ': [
-                        CallbackQueryHandler(mxat_building_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.text & ~Filters.command, mxat_building_quizz)],
-            'LEVEL_FIVE_END': [MessageHandler(Filters.text & ~Filters.command, level_one_end)],
-            'ELECTRO_LOCATION': [
-                        CallbackQueryHandler(mxat_location_quizz_menu_callback, pattern='^(hint|answer)$'),
-                        MessageHandler(Filters.location & ~Filters.command, mxat_transition)],
+                        CallbackQueryHandler(electro_building_quizz_menu_callback, pattern='^(hint|answer)$'),
+                        MessageHandler(Filters.text & ~Filters.command, electro_building_quizz)],
+            'LEVEL_FIVE_END': [MessageHandler(Filters.text & ~Filters.command, level_five_end)],
         },
         fallbacks=[CommandHandler('restart', restart), 
                    CommandHandler('levels', level_choice_menu),
-                   CommandHandler('cancel', cancel)],
+                   CommandHandler('cancel', cancel),
+                   CommandHandler('feedback', feedback_receiver)],
         per_chat=True,
     )
 

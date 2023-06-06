@@ -1,6 +1,6 @@
 import time
 import sqlite3
-from pathlib import Path
+# import mysql.connector
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from quizz import bolshoi_history_question, bolshoi_building_question, bolshoi_to_mxat_question
@@ -10,9 +10,17 @@ from texts.text_one import *
 conn = sqlite3.connect('scores.db', check_same_thread=False)
 c = conn.cursor()
 
+# conn = mysql.connector.connect(
+#     host="188.120.245.105",
+#     user="y0urchaper0ne",
+#     password="96348916318uuf",
+#     database="scores"
+# )
+
 c.execute('''CREATE TABLE IF NOT EXISTS scores
             (user_id INTEGER PRIMARY KEY, history_score FLOAT,
             building_score FLOAT, level FLOAT)''')
+
 
 def get_history_score(user_id):
     c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
@@ -108,13 +116,27 @@ def level_choice(update, context):
             reply_markup = main_menu_open
         else: reply_markup = main_menu_closed
         update.message.reply_text(
-            text='Предлагаю начать знакомство с театром — выбирайте, история или здание?', 
+            text='C чего начнем в этот раз?', 
             reply_markup=reply_markup)
         return 'NATIONS_MAIN_MENU'
-    if str(update.message.text)[:-2] == 'Уровень 4' and (get_building_score(user_id) >= 4 or get_history_score(user_id) >= 4):
-        pass
-    if str(update.message.text)[:-2] == 'Уровень 5' and (get_building_score(user_id) >= 5 or get_history_score(user_id) >= 5):
-        pass
+
+    if str(update.message.text)[:-2] == 'Уровень 4' and get_user_level(user_id) >= 4.0:
+        if get_building_score(user_id) >= 4.0 and get_history_score(user_id) >= 4.0:
+            reply_markup = main_menu_open
+        else: reply_markup = main_menu_closed
+        update.message.reply_text(
+            text='Про что узнаем сперва?', 
+            reply_markup=reply_markup)
+        return 'LENKOM_MAIN_MENU'
+
+    if str(update.message.text)[:-2] == 'Уровень 5' and get_user_level(user_id) >= 5.0:
+        if get_building_score(user_id) >= 5.0 and get_history_score(user_id) >= 5.0:
+            reply_markup = main_menu_open
+        else: reply_markup = main_menu_closed
+        update.message.reply_text(
+            text='Про что рассказать вам — историю или здание?', 
+            reply_markup=reply_markup)
+        return 'ELECTRO_MAIN_MENU'
     else: update.message.reply_text(text='Похоже, этот уровень тебе еще недоступен!')
 
 
@@ -200,7 +222,7 @@ def bolshoi_main_menu(update, context):
         if get_building_score(user_id) < 1.0 or get_history_score(user_id) < 1.0:
             user_score = bolshoi_score(user_id)
             update.message.reply_text(text=f'Вы решили не все загадки! \n\n{user_score}')
-        elif get_building_score(user_id) == 1.0 and get_history_score(user_id) == 1.0:
+        elif get_building_score(user_id) >= 1.0 and get_history_score(user_id) >= 1.0:
             update.message.reply_text(
                 text='Большому театру — большая история. Поздравляю, вы перешли на второй уровень! И нам нужно двигаться дальше.', 
                 reply_markup=forward_menu)
@@ -332,7 +354,7 @@ def level_one_end(update, context):
             photo=open("/Users/ilya/Desktop/hsetelegrambot/media/mxat_transition.png", "rb"),)
         time.sleep(3)
         update.message.reply_text(
-            text=f'Догадались, о каком театре идет речь? 🤔 \nНапишите его название сообщением!',
+            text=f'Догадались, о каком театре речь? 🤔 \nНапишите его название сообщением!',
             reply_markup=reply_markup)
         return "BOLSHOI_TO_MXAT_TRANSITION"
     else: update.message.reply_text(text=f'Простите, я вас не понял 🥺')
@@ -362,7 +384,7 @@ def bolshoi_location_quizz_menu_callback(update, context):
     if query.data == 'hint':
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Показать ответ", callback_data='answer')]])
         query.edit_message_text(
-            text=f'Догадался, о каком театре идет речь? 🤔 \nНапишите его название сообщением!',
+            text=f'Догадались, о каком театре речь? 🤔 \nНапишите его название сообщением!',
             reply_markup=reply_markup)
         query.message.reply_text(
             text=f'💡 Следующий театр носит имя русского драматурга.' \
@@ -370,6 +392,6 @@ def bolshoi_location_quizz_menu_callback(update, context):
                  f' которая впоследствии стала символом театра.', parse_mode='HTML')    
     elif query.data == 'answer':
         query.edit_message_text(
-            text=f'Догадался, о каком театре идет речь? 🤔 \nНапишите его название сообщением!')
+            text=f'Догадались, о каком театре речь? 🤔 \nНапишите его название сообщением!')
         query.message.reply_text(
             text=f'Ответ: <tg-spoiler>МХТ им. Чехова</tg-spoiler>', parse_mode='HTML')
