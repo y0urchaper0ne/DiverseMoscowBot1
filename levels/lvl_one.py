@@ -1,22 +1,22 @@
 import time
 import sqlite3
 # import mysql.connector
-import psycopg2
+# import psycopg2
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from quizz import bolshoi_history_question, bolshoi_building_question, bolshoi_to_mxat_question
 from texts.text_one import *
 
 # Подключение к базе данных SQLite
-# conn = sqlite3.connect('scores.db', check_same_thread=False)
+conn = sqlite3.connect('scores.db', check_same_thread=False)
 
-conn = psycopg2.connect(
-    host="188.120.245.105",
-    user="y0urchaper0ne",
-    port="1500",
-    password="96348916318uuf",
-    database="scores"
-)
+# conn = psycopg2.connect(
+#     host="188.120.245.105",
+#     user="y0urchaper0ne",
+#     port="1500",
+#     password="96348916318uuf",
+#     database="scores"
+# )
 
 c = conn.cursor()
 
@@ -27,7 +27,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS scores
 
 
 def get_history_score(user_id):
-    c.execute("SELECT history_score FROM scores WHERE user_id = %s", (user_id,))
+    c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
     result = c.fetchone()
     if result:
         return result[0]
@@ -36,7 +36,7 @@ def get_history_score(user_id):
 
 
 def get_building_score(user_id):
-    c.execute("SELECT building_score FROM scores WHERE user_id = %s", (user_id,))
+    c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
     result = c.fetchone()
     if result:
         return result[0]
@@ -45,7 +45,7 @@ def get_building_score(user_id):
 
 
 def get_user_level(user_id):
-    c.execute("SELECT level FROM scores WHERE user_id = %s", (user_id,))
+    c.execute("SELECT level FROM scores WHERE user_id = ?", (user_id,))
     result = c.fetchone()
     if result:
         return result[0]
@@ -171,9 +171,9 @@ def intro_four(update, context):
     else: 
         history_menu = main_menu_open
     if str(update.message.text) == 'По рукам!':
-        c.execute("UPDATE scores SET level = level + 1.0 WHERE user_id = %s", (user_id,))
+        c.execute("UPDATE scores SET level = level + 1.0 WHERE user_id = ?", (user_id,))
         conn.commit()
-        c.execute("SELECT level FROM scores WHERE user_id = %s", (user_id,))
+        c.execute("SELECT level FROM scores WHERE user_id = ?", (user_id,))
         update.message.reply_text(text=louis_6)
         time.sleep(3)
         update.message.reply_text(text='Про что хотите узнать: историю театра или здание?', reply_markup=history_menu)
@@ -292,9 +292,9 @@ def bolshoi_history_quizz(update, context):
         return 'BOLSHOI_MAIN_MENU'
     response = bolshoi_history_question(text)
     if response == 'Merci! Все так 🥳':
-        c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = %s", (user_id,))
+        c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = ?", (user_id,))
         conn.commit()
-        c.execute("SELECT history_score FROM scores WHERE user_id = %s", (user_id,))
+        c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
         update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
         return 'BOLSHOI_HISTORY'
     update.message.reply_text(response)
@@ -327,9 +327,9 @@ def bolshoi_building_quizz(update, context):
         return 'BOLSHOI_MAIN_MENU'
     response = bolshoi_building_question(text)
     if response == 'Bravo! Из вас хороший математик 🥳':
-        c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = %s", (user_id,))
+        c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = ?", (user_id,))
         conn.commit()
-        c.execute("SELECT building_score FROM scores WHERE user_id = %s", (user_id,))
+        c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
         update.message.reply_text(response, reply_markup=unit_menu_wo_quizz)
         return 'BOLSHOI_BUILDING'
     update.message.reply_text(response)
