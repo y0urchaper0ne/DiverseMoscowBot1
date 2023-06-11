@@ -15,7 +15,7 @@ from files_manager import (get_building_score, get_history_score,
 
 
 def get_file_path():
-    if platform.system() == "Linux" and platform.release() == "ubuntu":
+    if platform.system() == "Linux":
         home_directory = os.path.expanduser("~")
         file_path = os.path.join(home_directory, "hsetelegrambot", "media", "final.pdf")
         return file_path
