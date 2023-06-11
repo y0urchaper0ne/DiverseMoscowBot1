@@ -1,22 +1,26 @@
 import time
-import sqlite3
+import platform
+import os
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from quizz import electro_building_question, electro_history_question
 from location import check_location_electro
 from texts.text_five import *
-from levels.lvl_one import (get_building_score, get_history_score, 
-                            main_menu_closed, main_menu_open, 
+from levels.lvl_one import (main_menu_closed, main_menu_open, 
                             unit_menu_quizz, unit_menu_wo_quizz,
                             quizz_menu,)
+from files_manager import (get_building_score, get_history_score,
+                           increment_level_count, increment_building_score,
+                           increment_history_score)
 
-# Подключение к базе данных SQLite
-conn = sqlite3.connect('scores.db', check_same_thread=False)
-c = conn.cursor()
 
-c.execute('''CREATE TABLE IF NOT EXISTS scores
-            (user_id INTEGER PRIMARY KEY, history_score FLOAT,
-            building_score FLOAT, level FLOAT)''')
+def get_file_path():
+    if platform.system() == "Linux" and platform.release() == "ubuntu":
+        home_directory = os.path.expanduser("~")
+        file_path = os.path.join(home_directory, "hsetelegrambot", "media", "final.pdf")
+        return file_path
+    else:
+        return '/Users/ilya/Desktop/hsetelegrambot/media/filal.pdf'
 
 
 def electro_score(user_id):
@@ -33,17 +37,13 @@ def electro_transition(update, context):
     """Обработчик геолокации"""
     user_id = update.effective_chat.id
     response = check_location_electro(update, context)
-    if response == 'True':
-        c.execute("UPDATE scores SET level = level + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT level FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(text=f'{electro_beginning}')
-        time.sleep(3)
+    if response:
+        increment_level_count(user_id)
         update.message.reply_text(
             text='Про что рассказать вам — историю или здание?', 
             reply_markup=main_menu_closed)
         return 'ELECTRO_MAIN_MENU'
-    update.message.reply_text(response)
+    update.message.reply_text(text='Похоже, вы еще не дошли до театра')
 
 
 def electro_main_menu(update, context):
@@ -59,7 +59,8 @@ def electro_main_menu(update, context):
         time.sleep(1)
         update.message.reply_text(
             text=f'{electro_history_text}', 
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='История Электротеатра', url=electro_history_url)]]),
+            reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text='История Электротеатра', url=electro_history_url)]]),
             )
         return 'ELECTRO_HISTORY'
 
@@ -71,7 +72,8 @@ def electro_main_menu(update, context):
         update.message.reply_text(text='Узнаем немного про здание!', reply_markup=building_menu)
         update.message.reply_text(
             text=f'{electro_building_text}', 
-            reply_markup= InlineKeyboardMarkup([[InlineKeyboardButton(text='Здание Электротеатра', url=electro_building_url)]]),
+            reply_markup= InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text='Здание Электротеатра', url=electro_building_url)]]),
             )
         return 'ELECTRO_BUILDING'
       
@@ -87,7 +89,7 @@ def electro_main_menu(update, context):
                 reply_markup=ReplyKeyboardRemove()) 
             time.sleep(2)
             update.message.reply_document(
-                document = open('/Users/ilya/Desktop/hsetelegrambot/media/filal.pdf', 'rb'),
+                document = open(get_file_path(), 'rb'),
                 caption=f'Merci за ваше участие и помощь — я бы точно не справился сам и не написал свою ' \
                     f'статью! В качестве благодарности поделюсь ею и с вами: там много того, о чем я не рассказывал.',)
             time.sleep(2)
@@ -106,7 +108,7 @@ def electro_history(update, context):
     if str(update.message.text) == 'Загадка' and get_history_score(user_id) < 5.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/electro_history.png", "rb"),
+            photo="https://ic.wampi.ru/2023/06/08/electro_history.png",
             caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'ELECTRO_HISTORY_QUIZZ'
@@ -126,7 +128,7 @@ def electro_building(update, context):
     if str(update.message.text) == 'Загадка' and get_building_score(user_id) < 5.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/electro_building.png", "rb"),
+            photo="https://im.wampi.ru/2023/06/08/electro_building.png",
             caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'ELECTRO_BUILDING_QUIZZ'
@@ -152,9 +154,7 @@ def electro_history_quizz(update, context):
         return 'ELECTRO_MAIN_MENU'
     response = electro_history_question(text)
     if response == 'Parfait! Вы абсолютно правы 👏':
-        c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
+        increment_history_score(user_id)
         update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
         return 'ELECTRO_HISTORY'
     update.message.reply_text(response)
@@ -187,10 +187,8 @@ def electro_building_quizz(update, context):
         return 'ELECTRO_MAIN_MENU'
     response = electro_building_question(text)
     if response == 'Chic! И правда 🤗':
-        c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(response, reply_markup=unit_menu_wo_quizz)
+        increment_building_score(user_id)
+        update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
         return 'ELECTRO_BUILDING'
     update.message.reply_text(response)
 

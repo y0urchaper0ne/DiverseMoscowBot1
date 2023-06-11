@@ -1,6 +1,6 @@
 from geopy import distance
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
+from telegram.ext import CallbackContext
 
 def check_location_mxat(update: Update, context: CallbackContext) -> None:
     location = update.message.location
@@ -12,10 +12,10 @@ def check_location_mxat(update: Update, context: CallbackContext) -> None:
     target_location = (target_latitude, target_longitude)
     distance_in_meters = distance.distance(user_location, target_location).m
     
-    if distance_in_meters <= 300:
-        return 'True'
+    if distance_in_meters <= 100:
+        return True
     else:
-        return "Похоже, вы еще не дошли до театра"
+        return False
 
 
 def check_location_nations(update: Update, context: CallbackContext) -> None:
@@ -28,10 +28,10 @@ def check_location_nations(update: Update, context: CallbackContext) -> None:
     target_location = (target_latitude, target_longitude)
     distance_in_meters = distance.distance(user_location, target_location).m
     
-    if distance_in_meters <= 300:
-        return 'True'
+    if distance_in_meters <= 100:
+        return True
     else:
-        return "Похоже, вы еще не дошли до театра"
+        return False
 
 
 def check_location_lenkom(update: Update, context: CallbackContext) -> None:
@@ -44,10 +44,10 @@ def check_location_lenkom(update: Update, context: CallbackContext) -> None:
     target_location = (target_latitude, target_longitude)
     distance_in_meters = distance.distance(user_location, target_location).m
     
-    if distance_in_meters <= 300:
-        return "True"
+    if distance_in_meters <= 100:
+        return True
     else:
-        return "Вы не на месте :("
+        return False
 
 
 def check_location_electro(update: Update, context: CallbackContext) -> None:
@@ -60,7 +60,7 @@ def check_location_electro(update: Update, context: CallbackContext) -> None:
     target_location = (target_latitude, target_longitude)
     distance_in_meters = distance.distance(user_location, target_location).m
     
-    if distance_in_meters <= 300:
-        return "True"
+    if distance_in_meters <= 100:
+        return True
     else:
-        return "Вы не на месте :("
+        return False

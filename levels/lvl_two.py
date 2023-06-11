@@ -5,18 +5,12 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMa
 from quizz import mxat_history_question, mxat_building_question, mxat_to_nations_question
 from location import check_location_mxat
 from texts.text_two import *
-from levels.lvl_one import (get_building_score, get_history_score, 
-                            main_menu_closed, main_menu_open, 
+from levels.lvl_one import (main_menu_closed, main_menu_open, 
                             unit_menu_quizz, unit_menu_wo_quizz,
                             quizz_menu,)
-
-# Подключение к базе данных SQLite
-conn = sqlite3.connect('scores.db', check_same_thread=False)
-c = conn.cursor()
-
-c.execute('''CREATE TABLE IF NOT EXISTS scores
-            (user_id INTEGER PRIMARY KEY, history_score FLOAT,
-            building_score FLOAT, level FLOAT)''')
+from files_manager import (get_building_score, get_history_score,
+                           increment_level_count, increment_building_score,
+                           increment_history_score)
 
 
 def mxat_score(user_id):
@@ -33,17 +27,13 @@ def mxat_transition(update, context):
     """Обработчик геолокации"""
     user_id = update.effective_chat.id
     response = check_location_mxat(update, context)
-    if response == 'True':
-        c.execute("UPDATE scores SET level = level + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT level FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(text=f'{mxat_beginning}')
-        time.sleep(3)
+    if response:
+        increment_level_count(user_id)
         update.message.reply_text(
             text='Предлагаю начать знакомство с театром — выбирайте, история или здание?', 
             reply_markup=main_menu_closed)
         return 'MXAT_MAIN_MENU'
-    update.message.reply_text(response)
+    update.message.reply_text(text='Похоже, вы еще не дошли до театра')
 
 
 def mxat_main_menu(update, context):
@@ -59,7 +49,8 @@ def mxat_main_menu(update, context):
         time.sleep(1)
         update.message.reply_text(
             text=f'{mxat_history_text}', 
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='История МХТ им. Чехова', url=mxat_history_url)]]),
+            reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text='История МХТ им. Чехова', url=mxat_history_url)]]),
             )
         return 'MXAT_HISTORY'
 
@@ -97,7 +88,7 @@ def mxat_history(update, context):
     if str(update.message.text) == 'Загадка' and get_history_score(user_id) < 2.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/mxat_history.png", "rb"),
+            photo="https://ic.wampi.ru/2023/06/08/mxat_history.png",
             caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'MXAT_HISTORY_QUIZZ'
@@ -117,7 +108,7 @@ def mxat_building(update, context):
     if str(update.message.text) == 'Загадка' and get_building_score(user_id) < 2.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/mxat_building.png", "rb"),
+            photo="https://im.wampi.ru/2023/06/08/mxat_building.png",
             caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'MXAT_BUILDING_QUIZZ'
@@ -143,9 +134,7 @@ def mxat_history_quizz(update, context):
         return 'MXAT_MAIN_MENU'
     response = mxat_history_question(text)
     if response == 'Parfait! Вы абсолютно правы':
-        c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
+        increment_history_score(user_id)
         update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
         return 'MXAT_HISTORY'
     update.message.reply_text(response)
@@ -178,10 +167,8 @@ def mxat_building_quizz(update, context):
         return 'MXAT_MAIN_MENU'
     response = mxat_building_question(text)
     if response == 'Chic! И правда':
-        c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(response, reply_markup=unit_menu_wo_quizz)
+        increment_building_score(user_id)
+        update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
         return 'MXAT_BUILDING'
     update.message.reply_text(response)
 
@@ -206,8 +193,8 @@ def level_two_end(update, context):
     reply_markup = InlineKeyboardMarkup(quizz_menu)
     if str(update.message.text) == 'Вперед!':
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/nations_transition.png", "rb"),)
-        time.sleep(3)
+            photo="https://ie.wampi.ru/2023/06/08/nations_transition.png")
+        time.sleep(2)
         update.message.reply_text(
             text=f'Догадались, о каком театре речь? 🤔 \nОтправьте его название в сообщении!',
             reply_markup=reply_markup)
@@ -217,7 +204,8 @@ def level_two_end(update, context):
 
 def mxat_to_nations(update, context):
     """Обработчик загадки с Театром Наций"""
-    button = ReplyKeyboardMarkup([[KeyboardButton(text='На месте!', request_location=True)]], resize_keyboard=True, one_time_keyboard=True)    
+    button = ReplyKeyboardMarkup(
+        [[KeyboardButton(text='На месте!', request_location=True)]], resize_keyboard=True, one_time_keyboard=True)    
     text = str(update.message.text).lower()
     response = mxat_to_nations_question(text)
     if response == 'Génial! Следующая точка — Театр Наций!':

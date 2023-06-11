@@ -1,22 +1,15 @@
 import time
-import sqlite3
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from quizz import lenkom_building_question, lenkom_history_question, lenkom_to_electro_question
 from location import check_location_lenkom
 from texts.text_four import *
-from levels.lvl_one import (get_building_score, get_history_score, 
-                            main_menu_closed, main_menu_open, 
+from levels.lvl_one import (main_menu_closed, main_menu_open, 
                             unit_menu_quizz, unit_menu_wo_quizz,
                             quizz_menu,)
-
-# Подключение к базе данных SQLite
-conn = sqlite3.connect('scores.db', check_same_thread=False)
-c = conn.cursor()
-
-c.execute('''CREATE TABLE IF NOT EXISTS scores
-            (user_id INTEGER PRIMARY KEY, history_score FLOAT,
-            building_score FLOAT, level FLOAT)''')
+from files_manager import (get_building_score, get_history_score,
+                           increment_level_count, increment_building_score,
+                           increment_history_score)
 
 
 def lenkom_score(user_id):
@@ -33,17 +26,13 @@ def lenkom_transition(update, context):
     """Обработчик геолокации"""
     user_id = update.effective_chat.id
     response = check_location_lenkom(update, context)
-    if response == 'True':
-        c.execute("UPDATE scores SET level = level + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT level FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(text=f'{lenkom_beginning}')
-        time.sleep(3)
+    if response:
+        increment_level_count(user_id)
         update.message.reply_text(
             text='Про что узнаем сперва?', 
             reply_markup=main_menu_closed)
         return 'LENKOM_MAIN_MENU'
-    update.message.reply_text(response)
+    update.message.reply_text(text='Похоже, вы еще не дошли до театра')
 
 
 def lenkom_main_menu(update, context):
@@ -91,13 +80,13 @@ def lenkom_main_menu(update, context):
 
 
 def lenkom_history(update, context):
-    """Блок истории МХТ"""
+    """Блок истории Ленкома"""
     user_id = update.effective_chat.id
 
     if str(update.message.text) == 'Загадка' and get_history_score(user_id) < 4.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/lenkom_history.png", "rb"),
+            photo="https://ic.wampi.ru/2023/06/08/lenkom_history.png",
             caption = 'Афишу какого спектакля вы видите на картинке? Отправьте его название в сообщении!',
             reply_markup=reply_markup)
         return 'LENKOM_HISTORY_QUIZZ'
@@ -111,13 +100,13 @@ def lenkom_history(update, context):
 
 
 def lenkom_building(update, context):
-    """Блок здания МХТ"""
+    """Блок здания Ленкома"""
     user_id = update.effective_chat.id
 
     if str(update.message.text) == 'Загадка' and get_building_score(user_id) < 4.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/lenkom_building.png", "rb"),
+            photo="https://ie.wampi.ru/2023/06/08/lenkom_building.png",
             caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'LENKOM_BUILDING_QUIZZ'
@@ -131,8 +120,9 @@ def lenkom_building(update, context):
 
 
 def lenkom_history_quizz(update, context):
-    """Вопрос по истории МХТ"""
+    """Вопрос по истории Ленкома"""
     user_id = update.effective_chat.id
+    message_id = update.message.message_id
 
     text = str(update.message.text).lower()
     if text == 'назад':
@@ -142,13 +132,14 @@ def lenkom_history_quizz(update, context):
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
         return 'LENKOM_MAIN_MENU'
     response = lenkom_history_question(text)
+
     if response == 'Parfait! Все так 🥳':
-        # update.message.edit_media(
-        #     media=open("/Users/ilya/Desktop/hsetelegrambot/media/lenkom_history 2.png", "rb"),) 
-        c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
+        update.message.reply_photo(
+            photo="https://im.wampi.ru/2023/06/08/lenkom_history-2.png",
+            caption=response,
+            reply_markup=unit_menu_wo_quizz
+        )
+        increment_history_score(user_id)
         return 'LENKOM_HISTORY'
     update.message.reply_text(response)
 
@@ -169,7 +160,7 @@ def lenkom_history_quizz_menu_callback(update, context):
 
 
 def lenkom_building_quizz(update, context):
-    """Вопрос про здание МХТ"""
+    """Вопрос про здание Ленкома"""
     user_id = update.effective_chat.id
     text = str(update.message.text).lower()
     if text == 'назад':
@@ -180,10 +171,8 @@ def lenkom_building_quizz(update, context):
         return 'LENKOM_MAIN_MENU'
     response = lenkom_building_question(text)
     if response == 'Magnifique! Вы очень наблюдательны':
-        c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
-        update.message.reply_text(response, reply_markup=unit_menu_wo_quizz)
+        increment_building_score(user_id)
+        update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
         return 'LENKOM_BUILDING'
     update.message.reply_text(response)
 
@@ -208,8 +197,8 @@ def level_four_end(update, context):
     reply_markup = InlineKeyboardMarkup(quizz_menu)
     if str(update.message.text) == 'Вперед!':
         update.message.reply_photo(
-            photo=open('/Users/ilya/Desktop/hsetelegrambot/media/elecro_transition.png', "rb"))
-        time.sleep(3)
+            photo='https://ie.wampi.ru/2023/06/08/elecro_transition.png')
+        time.sleep(2)
         update.message.reply_text(
             text=f'Догадались, о каком театре речь? 🤔 \nОтправьте его название в сообщении!',
             reply_markup=reply_markup)

@@ -1,59 +1,19 @@
 import time
-import sqlite3
-# import mysql.connector
-# import psycopg2
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
-from quizz import bolshoi_history_question, bolshoi_building_question, bolshoi_to_mxat_question
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, 
+                      ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove)
+from quizz import (bolshoi_history_question, bolshoi_building_question, 
+                   bolshoi_to_mxat_question)
+from files_manager import (get_building_score, get_history_score,
+                           get_user_level, increment_level_count,
+                           increment_building_score, increment_history_score)
 from texts.text_one import *
 
-# Подключение к базе данных SQLite
-conn = sqlite3.connect('scores.db', check_same_thread=False)
+main_menu_closed = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔒']], 
+                                       resize_keyboard=True)
+main_menu_open = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔑']], 
+                                     resize_keyboard=True)
 
-# conn = psycopg2.connect(
-#     host="188.120.245.105",
-#     user="y0urchaper0ne",
-#     port="1500",
-#     password="96348916318uuf",
-#     database="scores"
-# )
-
-c = conn.cursor()
-
-
-c.execute('''CREATE TABLE IF NOT EXISTS scores
-            (user_id INTEGER PRIMARY KEY, history_score FLOAT,
-            building_score FLOAT, level FLOAT)''')
-
-
-def get_history_score(user_id):
-    c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
-    result = c.fetchone()
-    if result:
-        return result[0]
-    else:
-        return None
-
-
-def get_building_score(user_id):
-    c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
-    result = c.fetchone()
-    if result:
-        return result[0]
-    else:
-        return None  
-
-
-def get_user_level(user_id):
-    c.execute("SELECT level FROM scores WHERE user_id = ?", (user_id,))
-    result = c.fetchone()
-    if result:
-        return result[0]
-    else:
-        return None
-
-main_menu_closed = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔒']], resize_keyboard=True)
-main_menu_open = ReplyKeyboardMarkup([['История 📜'], ['Здание 🏛️'], ['Перейти дальше 🔑']], resize_keyboard=True)
 
 def level_choice_menu(update, context):
     user_id = update.effective_chat.id
@@ -73,21 +33,23 @@ def level_choice_menu(update, context):
     levels_menu = ReplyKeyboardMarkup([
         [f'{lvl_one_button}'], [f'{lvl_two_button}'], [f'{lvl_three_button}'],
         [f'{lvl_four_button}'], [f'{lvl_five_button}']], resize_keyboard=True)
-    update.message.reply_text(text='Выберите, на какой уровень вы хотите перейти!', reply_markup=levels_menu)
+    update.message.reply_text(text='Выберите, на какой уровень вы хотите перейти!', 
+                              reply_markup=levels_menu)
     return 'LEVEL_CHOICE'
 
 
 def intro(update, context):
     if str(update.message.text) == 'Начать путешествие 🎭':
         button = ReplyKeyboardMarkup([['Да, интересуюсь']], resize_keyboard=True, one_time_keyboard=True)
-        update.message.reply_text(text='Bonjour!', reply_markup=button)
+        update.message.reply_text(text='Bonjour!', reply_markup=ReplyKeyboardRemove()) 
         time.sleep(2)
-        update.message.reply_text(text=louis_1)
+        update.message.reply_text(text=louis_1, reply_markup=button)
         return 'INTRO_2'
     elif str(update.message.text) == 'Прочитать правила 📝':
         update.message.reply_text(
             text=rules,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='Инструкция по прохождению', url=rules_url)]]))
+            reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text='Инструкция по прохождению', url=rules_url)]]))
     
 
 def level_choice(update, context):
@@ -97,10 +59,12 @@ def level_choice(update, context):
             if get_building_score(user_id) >= 1.0 and get_history_score(user_id) >= 1.0:
                 reply_markup = main_menu_open
             else: reply_markup = main_menu_closed
-            update.message.reply_text(text='Про что хотите узнать: историю театра или здание?', reply_markup=reply_markup)
+            update.message.reply_text(text='Про что хотите узнать: историю театра или здание?', 
+                                      reply_markup=reply_markup)
             return 'BOLSHOI_MAIN_MENU'
         else:
-            button = ReplyKeyboardMarkup([['Да, интересуюсь']], resize_keyboard=True, one_time_keyboard=True)
+            button = ReplyKeyboardMarkup(
+                [['Да, интересуюсь']], resize_keyboard=True, one_time_keyboard=True)
             update.message.reply_text(text='Bonjour!', reply_markup=button)
             time.sleep(2)
             update.message.reply_text(text=louis_1)
@@ -171,16 +135,17 @@ def intro_four(update, context):
     else: 
         history_menu = main_menu_open
     if str(update.message.text) == 'По рукам!':
-        c.execute("UPDATE scores SET level = level + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT level FROM scores WHERE user_id = ?", (user_id,))
+        increment_level_count(user_id)
         update.message.reply_text(text=louis_6)
         time.sleep(3)
-        update.message.reply_text(text='Про что хотите узнать: историю театра или здание?', reply_markup=history_menu)
+        update.message.reply_text(text='Про что хотите узнать: историю театра или здание?',
+                                  reply_markup=history_menu)
         return 'BOLSHOI_MAIN_MENU'
+
 
 unit_menu_quizz = ReplyKeyboardMarkup([['Загадка'], ['Назад']], resize_keyboard=True)
 unit_menu_wo_quizz = ReplyKeyboardMarkup([['Назад']], resize_keyboard=True)
+
 
 def bolshoi_score(user_id):
     if get_building_score(user_id) == 1.0:
@@ -205,7 +170,8 @@ def bolshoi_main_menu(update, context):
         time.sleep(1)
         update.message.reply_text(
             text=f'{bolshoi_history_text}', 
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(text='История Большого театра', url=bolshoi_history_url)]]),
+            reply_markup=InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text='История Большого театра', url=bolshoi_history_url)]]),
             )
         return 'BOLSHOI_HISTORY'
 
@@ -217,7 +183,8 @@ def bolshoi_main_menu(update, context):
         update.message.reply_text(text='Узнаем немного про здание!', reply_markup=building_menu)
         update.message.reply_text(
             text=f'{bolshoi_building_text}', 
-            reply_markup= InlineKeyboardMarkup([[InlineKeyboardButton(text='Здание Большого театра', url=bolshoi_building_url)]]),
+            reply_markup= InlineKeyboardMarkup(
+            [[InlineKeyboardButton(text='Здание Большого театра', url=bolshoi_building_url)]]),
             )
         return 'BOLSHOI_BUILDING'
       
@@ -228,7 +195,8 @@ def bolshoi_main_menu(update, context):
             update.message.reply_text(text=f'Вы решили не все загадки! \n\n{user_score}')
         elif get_building_score(user_id) >= 1.0 and get_history_score(user_id) >= 1.0:
             update.message.reply_text(
-                text='Большому театру — большая история. Поздравляю, вы перешли на второй уровень! И нам нужно двигаться дальше.', 
+                text=f'Большому театру — большая история. Поздравляю, вы перешли на второй уровень!' \
+                     f' И нам нужно двигаться дальше.', 
                 reply_markup=forward_menu)
             return 'LEVEL_ONE_END'
 
@@ -247,7 +215,7 @@ def bolshoi_history(update, context):
     if str(update.message.text) == 'Загадка' and get_history_score(user_id) < 1.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/bolshoi_history.png", "rb"),
+            photo="https://ic.wampi.ru/2023/06/08/bolshoi_history7643e942eeab8632.png",
             caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'BOLSHOI_HISTORY_QUIZZ'
@@ -267,7 +235,7 @@ def bolshoi_building(update, context):
     if str(update.message.text) == 'Загадка' and get_building_score(user_id) < 1.0:
         reply_markup = InlineKeyboardMarkup(quizz_menu)
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/bolshoi_building.png", "rb"),
+            photo="https://im.wampi.ru/2023/06/08/bolshoi_building.png",
             caption = 'Пишите ответ внизу 👇',
             reply_markup=reply_markup)
         return 'BOLSHOI_BUILDING_QUIZZ'
@@ -292,9 +260,7 @@ def bolshoi_history_quizz(update, context):
         return 'BOLSHOI_MAIN_MENU'
     response = bolshoi_history_question(text)
     if response == 'Merci! Все так 🥳':
-        c.execute("UPDATE scores SET history_score = history_score + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT history_score FROM scores WHERE user_id = ?", (user_id,))
+        increment_history_score(user_id)
         update.message.reply_text(text=response, reply_markup=unit_menu_wo_quizz)
         return 'BOLSHOI_HISTORY'
     update.message.reply_text(response)
@@ -327,9 +293,7 @@ def bolshoi_building_quizz(update, context):
         return 'BOLSHOI_MAIN_MENU'
     response = bolshoi_building_question(text)
     if response == 'Bravo! Из вас хороший математик 🥳':
-        c.execute("UPDATE scores SET building_score = building_score + 1.0 WHERE user_id = ?", (user_id,))
-        conn.commit()
-        c.execute("SELECT building_score FROM scores WHERE user_id = ?", (user_id,))
+        increment_building_score(user_id)
         update.message.reply_text(response, reply_markup=unit_menu_wo_quizz)
         return 'BOLSHOI_BUILDING'
     update.message.reply_text(response)
@@ -355,8 +319,8 @@ def level_one_end(update, context):
     reply_markup = InlineKeyboardMarkup(quizz_menu)
     if str(update.message.text) == 'Вперед!':
         update.message.reply_photo(
-            photo=open("/Users/ilya/Desktop/hsetelegrambot/media/mxat_transition.png", "rb"),)
-        time.sleep(3)
+            photo="https://ie.wampi.ru/2023/06/08/mxat_transition.png")
+        time.sleep(2)
         update.message.reply_text(
             text=f'Догадались, о каком театре речь? 🤔 \nНапишите его название сообщением!',
             reply_markup=reply_markup)
@@ -366,7 +330,8 @@ def level_one_end(update, context):
 
 def bolshoi_to_mxat(update, context):
     """Обработчик загадки с МХТ"""
-    button = ReplyKeyboardMarkup([[KeyboardButton(text='На месте!', request_location=True)]], resize_keyboard=True, one_time_keyboard=True)    
+    button = ReplyKeyboardMarkup(
+        [[KeyboardButton(text='На месте!', request_location=True)]], resize_keyboard=True, one_time_keyboard=True)    
     text = str(update.message.text).lower()
     response = bolshoi_to_mxat_question(text)
     if response == 'Génial! Следующая остановка нашего маршрута — МХТ им. Чехова!':

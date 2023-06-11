@@ -1,8 +1,3 @@
-import sqlite3
-# import mysql.connector
-import pymysql
-# import psycopg2
-
 import warnings
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
@@ -48,6 +43,7 @@ from levels.lvl_five import (electro_transition, electro_building,
                               electro_history_quizz, electro_main_menu,
                               level_five_end,
                               )
+from files_manager import create_csv_file, delete_csv_file
 
 import os
 from dotenv import load_dotenv
@@ -55,32 +51,10 @@ load_dotenv()
 
 TOKEN = os.getenv('TOKEN')
 
-# conn = psycopg2.connect(
-#     host="188.120.245.105",
-#     port="1500",
-#     user="root",
-#     password="96348916318uuf",
-#     database="scores"
-# )
-
-conn = sqlite3.connect('scores.db', check_same_thread=False)
-c = conn.cursor()
-
-c.execute('''CREATE TABLE IF NOT EXISTS scores
-            (user_id INTEGER PRIMARY KEY, history_score FLOAT,
-            building_score FLOAT, level FLOAT)''')
-
-
 def start(update, context):
     """Функция, запускающая бота"""
     user_id = update.effective_chat.id
-
-    c.execute(
-        """INSERT OR IGNORE INTO scores
-        (user_id, history_score, building_score, level) VALUES (?, 0, 0, 0)""",
-        (user_id,))
-    conn.commit()
-
+    create_csv_file(user_id)
     chat = update.effective_chat
     name = update.message.chat.first_name
     button = ReplyKeyboardMarkup(
@@ -122,13 +96,9 @@ def feedback_receiver(update, context):
 def cancel(update, context):
     """Завершение бота"""
     user_id = update.effective_chat.id
-    c.execute('''DELETE FROM scores
-                 WHERE user_id = ?''', (user_id,))
-    conn.commit()
+    delete_csv_file(user_id)
     update.message.reply_text(
         text='До встречи!', reply_markup=ReplyKeyboardRemove())
-    # c.close()
-    # conn.close()
     return ConversationHandler.END
 
 
