@@ -20,7 +20,7 @@
 
 ```sh
 python3 -m venv venv
-python3 source/venv/active
+python3 source venv/bin/active
 pip install -r requirements.txt
 python3 main.py
 ```
