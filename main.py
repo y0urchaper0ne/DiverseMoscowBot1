@@ -1,6 +1,7 @@
 import warnings
 
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, 
+                      InlineKeyboardMarkup, InlineKeyboardButton)
 
 from telegram.ext import (CallbackQueryHandler,
                           CommandHandler, ConversationHandler,
@@ -44,6 +45,7 @@ from levels.lvl_five import (electro_transition, electro_building,
                               level_five_end,
                               )
 from files_manager import create_csv_file, delete_csv_file
+from texts.text_one import rules_url
 
 import os
 from dotenv import load_dotenv
@@ -103,22 +105,12 @@ def cancel(update, context):
     return ConversationHandler.END
 
 
-def restart(update, context):
+def rules(update, context):
     """Перезапускаем бот"""
-    chat = update.effective_chat
-    name = update.message.chat.first_name
-    button = ReplyKeyboardMarkup(
-        [['Прочитать правила 📝'], ['Начать путешествие 🎭']],
-        resize_keyboard=True)
-
-    context.bot.send_message(
-        chat_id=chat.id,
-        text=f'Привет, {name}! Давайте начнем наше театральное приключение, ' \
-            f'стартовая точка которого — Большой театр. Вы можете сначала ' \
-            f'прочитать правила или же сразу приступить к квесту. Выберите, что хотите 👇',
-        reply_markup=button
-    )
-    return 'INTRO'
+    update.message.reply_text(
+        text=rules,
+        reply_markup=InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text='Инструкция по прохождению', url=rules_url)]]))
 
 
 def main():
@@ -223,7 +215,7 @@ def main():
                         MessageHandler(Filters.text & ~Filters.command, electro_building_quizz)],
             'LEVEL_FIVE_END': [MessageHandler(Filters.text & ~Filters.command, level_five_end)],
         },
-        fallbacks=[CommandHandler('restart', restart), 
+        fallbacks=[CommandHandler('rules', rules), 
                    CommandHandler('levels', level_choice_menu),
                    CommandHandler('cancel', cancel),
                    CommandHandler('feedback', feedback_receiver)],

@@ -17,10 +17,10 @@ from files_manager import (get_building_score, get_history_score,
 def get_file_path():
     if platform.system() == "Linux":
         home_directory = os.path.expanduser("~")
-        file_path = os.path.join(home_directory, "hsetelegrambot", "media", "гайд по театрам.pdf")
+        file_path = os.path.join(home_directory, "hsetelegrambot", "media", "guide.pdf")
         return file_path
     else:
-        return '/Users/ilya/Desktop/hsetelegrambot/media/гайд по театрам.pdf'
+        return '/Users/ilya/Desktop/hsetelegrambot/media/guide.pdf'
 
 
 def electro_score(user_id):
@@ -38,6 +38,8 @@ def electro_transition(update, context):
     user_id = update.effective_chat.id
     response = check_location_electro(update, context)
     if response:
+        update.message.reply_text(electro_beginning)
+        time.sleep(2)
         increment_level_count(user_id)
         update.message.reply_text(
             text='Про что рассказать вам — историю или здание?', 

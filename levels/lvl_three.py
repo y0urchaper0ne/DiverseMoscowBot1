@@ -27,6 +27,8 @@ def nations_transition(update, context):
     user_id = update.effective_chat.id
     response = check_location_nations(update, context)
     if response:
+        update.message.reply_text(nations_beginning)
+        time.sleep(2)
         increment_level_count(user_id)
         update.message.reply_text(
             text='C чего начнем в этот раз?', 
@@ -73,7 +75,7 @@ def nations_main_menu(update, context):
             update.message.reply_text(text=f'Вы решили не все загадки! \n\n{user_score}')
         elif get_building_score(user_id) >= 3.0 and get_history_score(user_id) >= 3.0:
             update.message.reply_text(
-                text=f'Больше половины нашего promenade уже позади! Вы уже на четвертом уровне, bravo 🥳 \n\n' \
+                text=f'Больше половины нашего promenade уже позади! Вы на четвертом уровне, bravo 🥳 ' \
                      f'Давайте же скорее пойдем к следующей точке.', 
                 reply_markup=forward_menu)
             return 'LEVEL_THREE_END'

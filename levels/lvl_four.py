@@ -27,6 +27,8 @@ def lenkom_transition(update, context):
     user_id = update.effective_chat.id
     response = check_location_lenkom(update, context)
     if response:
+        update.message.reply_text(lenkom_beginning)
+        time.sleep(2)
         increment_level_count(user_id)
         update.message.reply_text(
             text='Про что узнаем сперва?', 
@@ -71,7 +73,7 @@ def lenkom_main_menu(update, context):
             update.message.reply_text(text=f'Вы решили не все загадки! \n\n{user_score}')
         elif get_building_score(user_id) >= 4.0 and get_history_score(user_id) >= 4.0:
             update.message.reply_text(
-                text=f'Время так быстро летит! Оглянуться не успели, как вы уже на последнем, пятом уровне 🥳 \n\n'
+                text=f'Время так быстро летит! Оглянуться не успели, как вы уже на последнем, пятом уровне 🎉 '
                      f'Осталась последняя точка в нашем маршруте.', 
                 reply_markup=forward_menu)
             return 'LEVEL_FOUR_END'

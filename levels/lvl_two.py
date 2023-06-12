@@ -28,6 +28,8 @@ def mxat_transition(update, context):
     user_id = update.effective_chat.id
     response = check_location_mxat(update, context)
     if response:
+        update.message.reply_text(mxat_beginning)
+        time.sleep(2)
         increment_level_count(user_id)
         update.message.reply_text(
             text='Предлагаю начать знакомство с театром — выбирайте, история или здание?', 
