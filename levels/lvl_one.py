@@ -41,7 +41,10 @@ def level_choice_menu(update, context):
 def intro(update, context):
     if str(update.message.text) == 'Начать путешествие 🎭':
         button = ReplyKeyboardMarkup([['Да, интересуюсь']], resize_keyboard=True, one_time_keyboard=True)
-        update.message.reply_text(text='Bonjour!', reply_markup=ReplyKeyboardRemove()) 
+        update.message.reply_photo(
+            photo="https://wampi.ru/image/RXB3FF0",
+            caption = 'Bonjour!',
+            reply_markup=ReplyKeyboardRemove()) 
         time.sleep(2)
         update.message.reply_text(text=louis_1, reply_markup=button)
         return 'INTRO_2'
@@ -50,6 +53,7 @@ def intro(update, context):
             text=rules,
             reply_markup=InlineKeyboardMarkup(
             [[InlineKeyboardButton(text='Инструкция по прохождению', url=rules_url)]]))
+    else: update.message.reply_text(text=f'Простите, я вас не понял 🥺')
     
 
 def level_choice(update, context):
@@ -117,6 +121,7 @@ def intro_two(update, context):
         time.sleep(3)
         update.message.reply_text(text='Не могли бы вы мне помочь?', reply_markup=button)
         return 'INTRO_3'
+    else: update.message.reply_text(text=f'Простите, я вас не понял 🥺')
 
 
 def intro_three(update, context):
@@ -126,6 +131,7 @@ def intro_three(update, context):
         time.sleep(3)
         update.message.reply_text(text=louis_5, reply_markup=button)
         return 'INTRO_4'
+    else: update.message.reply_text(text=f'Простите, я вас не понял 🥺')
 
 
 def intro_four(update, context):
@@ -141,6 +147,7 @@ def intro_four(update, context):
         update.message.reply_text(text='Про что хотите узнать: историю театра или здание?',
                                   reply_markup=history_menu)
         return 'BOLSHOI_MAIN_MENU'
+    else: update.message.reply_text(text=f'Простите, я вас не понял 🥺')
 
 
 unit_menu_quizz = ReplyKeyboardMarkup([['Загадка'], ['Назад']], resize_keyboard=True)

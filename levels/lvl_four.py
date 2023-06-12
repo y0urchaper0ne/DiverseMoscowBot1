@@ -135,7 +135,7 @@ def lenkom_history_quizz(update, context):
 
     if response == 'Parfait! Все так 🥳':
         update.message.reply_photo(
-            photo="https://im.wampi.ru/2023/06/08/lenkom_history-2.png",
+            photo="https://ic.wampi.ru/2023/06/12/lenkom_answer.png",
             caption=response,
             reply_markup=unit_menu_wo_quizz
         )

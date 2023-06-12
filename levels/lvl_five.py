@@ -17,10 +17,10 @@ from files_manager import (get_building_score, get_history_score,
 def get_file_path():
     if platform.system() == "Linux":
         home_directory = os.path.expanduser("~")
-        file_path = os.path.join(home_directory, "hsetelegrambot", "media", "final.pdf")
+        file_path = os.path.join(home_directory, "hsetelegrambot", "media", "гайд по театрам.pdf")
         return file_path
     else:
-        return '/Users/ilya/Desktop/hsetelegrambot/media/filal.pdf'
+        return '/Users/ilya/Desktop/hsetelegrambot/media/гайд по театрам.pdf'
 
 
 def electro_score(user_id):
@@ -96,7 +96,9 @@ def electro_main_menu(update, context):
             update.message.reply_text(
                 text=f'Цените театр! Bonne chance! А я обратно во Францию — сдавать материал.',
                 reply_markup=forward_menu) 
+            update.message.reply_photo(photo="https://wampi.ru/image/RXB3FF0") 
             return 'LEVEL_FIVE_END'
+        else: update.message.reply_text(text=f'Простите, я вас не понял 🥺')
 
     else: update.message.reply_text(text=f'Простите, я вас не понял 🥺')
 

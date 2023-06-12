@@ -89,6 +89,7 @@ def feedback_receiver(update, context):
     context.bot.send_message(
         chat_id=chat.id,
         text=f'Здесь вы можете отправить любой фидбэк по квесту 👇',
+        reply_markup=ReplyKeyboardRemove()
     )
     return 'FEEDBACK'
 

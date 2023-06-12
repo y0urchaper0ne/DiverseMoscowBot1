@@ -1,6 +1,6 @@
 electro_history_url = 'https://telegra.ph/EHlektroteatr-istoriya-05-21'
 electro_building_url = 'https://telegra.ph/EHlektroteatr-zdanie-05-21'
-donate_url = 'https://www.tinkoff.ru/rm/kirik.alisa1/k1IUp96877/'
+donate_url = 'https://www.tinkoff.ru/rm/nikitin.ilya259/k70Wq75736'
 
 electro_beginning = f'Мы начали прогулку с самого старого в рамках маршрута театра, ' \
         f'а закончим — самым молодым. Электротеатр, à mon opinion, одна из самых необычных ' \
