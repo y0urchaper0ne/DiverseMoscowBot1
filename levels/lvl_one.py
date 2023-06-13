@@ -69,9 +69,11 @@ def level_choice(update, context):
         else:
             button = ReplyKeyboardMarkup(
                 [['Да, интересуюсь']], resize_keyboard=True, one_time_keyboard=True)
-            update.message.reply_text(text='Bonjour!', reply_markup=button)
+            update.message.reply_photo(
+                photo="https://wampi.ru/image/RXB3FF0",
+                caption = 'Bonjour!', reply_markup=ReplyKeyboardRemove()) 
             time.sleep(2)
-            update.message.reply_text(text=louis_1)
+            update.message.reply_text(text=louis_1, reply_markup=button)
             return 'INTRO_2'
 
     if str(update.message.text)[:-2] == 'Уровень 2' and get_user_level(user_id) >= 2.0:

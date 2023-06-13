@@ -45,7 +45,7 @@ from levels.lvl_five import (electro_transition, electro_building,
                               level_five_end,
                               )
 from files_manager import create_csv_file, delete_csv_file
-from texts.text_one import rules_url
+from texts.text_one import rules_url, rules
 
 import os
 from dotenv import load_dotenv
@@ -105,7 +105,7 @@ def cancel(update, context):
     return ConversationHandler.END
 
 
-def rules(update, context):
+def get_rules(update, context):
     """Перезапускаем бот"""
     update.message.reply_text(
         text=rules,
@@ -215,7 +215,7 @@ def main():
                         MessageHandler(Filters.text & ~Filters.command, electro_building_quizz)],
             'LEVEL_FIVE_END': [MessageHandler(Filters.text & ~Filters.command, level_five_end)],
         },
-        fallbacks=[CommandHandler('rules', rules), 
+        fallbacks=[CommandHandler('rules', get_rules), 
                    CommandHandler('levels', level_choice_menu),
                    CommandHandler('cancel', cancel),
                    CommandHandler('feedback', feedback_receiver)],
