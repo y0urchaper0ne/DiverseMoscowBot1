@@ -17,10 +17,10 @@ from files_manager import (get_building_score, get_history_score,
 def get_file_path():
     if platform.system() == "Linux":
         home_directory = os.path.expanduser("~")
-        file_path = os.path.join(home_directory, "hsetelegrambot", "media", "guide.pdf")
+        file_path = os.path.join(home_directory, "DiverseMoscowBot", "media", "guide.pdf")
         return file_path
     else:
-        return '/Users/ilya/Desktop/hsetelegrambot/media/guide.pdf'
+        return '/Users/ilya/Desktop/DiverseMoscowBot/media/guide.pdf'
 
 
 def electro_score(user_id):
@@ -89,16 +89,14 @@ def electro_main_menu(update, context):
                 text=f'Все хорошее рано или поздно заканчивается — как и наша прогулка, которая была' \
                     f' для меня просто замечательной. Надеюсь, и вам понравилась эта mini-экскурсия.',
                 reply_markup=ReplyKeyboardRemove()) 
-            time.sleep(2)
             update.message.reply_document(
                 document = open(get_file_path(), 'rb'),
                 caption=f'Merci за ваше участие и помощь — я бы точно не справился сам и не написал свою ' \
                     f'статью! В качестве благодарности поделюсь ею и с вами: там много того, о чем я не рассказывал.',)
-            time.sleep(2)
-            update.message.reply_text(
-                text=f'Цените театр! Bonne chance! А я обратно во Францию — сдавать материал.',
-                reply_markup=forward_menu) 
-            update.message.reply_photo(photo="https://wampi.ru/image/RXB3FF0") 
+            time.sleep(2) 
+            update.message.reply_photo(photo="https://ie.wampi.ru/2023/06/15/louis_finish.png",
+                                       caption='Цените театр! Bonne chance! А я обратно во Францию — сдавать материал.',
+                                       reply_markup=forward_menu) 
             return 'LEVEL_FIVE_END'
         else: update.message.reply_text(text=f'Простите, я вас не понял 🥺')
 
@@ -117,7 +115,7 @@ def electro_history(update, context):
             reply_markup=reply_markup)
         return 'ELECTRO_HISTORY_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 5.0 and get_history_score(user_id) == 5.0:
+        if get_building_score(user_id) >= 5.0 and get_history_score(user_id) >= 5.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -137,7 +135,7 @@ def electro_building(update, context):
             reply_markup=reply_markup)
         return 'ELECTRO_BUILDING_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 5.0 and get_history_score(user_id) == 5.0:
+        if get_building_score(user_id) >= 5.0 and get_history_score(user_id) >= 5.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -151,7 +149,7 @@ def electro_history_quizz(update, context):
 
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 5.0 and get_history_score(user_id) == 5.0:
+        if get_building_score(user_id) >= 5.0 and get_history_score(user_id) >= 5.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -184,7 +182,7 @@ def electro_building_quizz(update, context):
     user_id = update.effective_chat.id
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 5.0 and get_history_score(user_id) == 5.0:
+        if get_building_score(user_id) >= 5.0 and get_history_score(user_id) >= 5.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)

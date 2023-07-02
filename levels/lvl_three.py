@@ -95,7 +95,7 @@ def nations_history(update, context):
             reply_markup=reply_markup)
         return 'NATIONS_HISTORY_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 3.0 and get_history_score(user_id) == 3.0:
+        if get_building_score(user_id) >= 3.0 and get_history_score(user_id) >= 3.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -115,7 +115,7 @@ def nations_building(update, context):
             reply_markup=reply_markup)
         return 'NATIONS_BUILDING_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 3.0 and get_history_score(user_id) == 3.0:
+        if get_building_score(user_id) >= 3.0 and get_history_score(user_id) >= 3.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -129,7 +129,7 @@ def nations_history_quizz(update, context):
 
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 3.0 and get_history_score(user_id) == 3.0:
+        if get_building_score(user_id) >= 3.0 and get_history_score(user_id) >= 3.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -162,7 +162,7 @@ def nations_building_quizz(update, context):
     user_id = update.effective_chat.id
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 3.0 and get_history_score(user_id) == 3.0:
+        if get_building_score(user_id) >= 3.0 and get_history_score(user_id) >= 3.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -230,7 +230,7 @@ def nations_location_quizz_menu_callback(update, context):
             text=f'Догадались, о каком театре речь? 🤔 \nОтправьте его название в сообщении!',
             reply_markup=reply_markup)
         query.message.reply_text(
-            text=f'💡 Загаданный фильм — «12 стульев»', parse_mode='HTML')    
+            text=f'💡 Загаданный фильм — «12 стульев», снятый в 1976 году', parse_mode='HTML')    
     elif query.data == 'answer':
         query.edit_message_text(
             text=f'Догадались, о каком театре речь? 🤔 \nОтправьте его название в сообщении!')

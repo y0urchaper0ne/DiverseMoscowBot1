@@ -95,7 +95,7 @@ def mxat_history(update, context):
             reply_markup=reply_markup)
         return 'MXAT_HISTORY_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 2.0 and get_history_score(user_id) == 2.0:
+        if get_building_score(user_id) >= 2.0 and get_history_score(user_id) >= 2.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -115,7 +115,7 @@ def mxat_building(update, context):
             reply_markup=reply_markup)
         return 'MXAT_BUILDING_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 2.0 and get_history_score(user_id) == 2.0:
+        if get_building_score(user_id) >= 2.0 and get_history_score(user_id) >= 2.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -129,7 +129,7 @@ def mxat_history_quizz(update, context):
 
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 2.0 and get_history_score(user_id) == 2.0:
+        if get_building_score(user_id) >= 2.0 and get_history_score(user_id) >= 2.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -162,7 +162,7 @@ def mxat_building_quizz(update, context):
     user_id = update.effective_chat.id
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 2.0 and get_history_score(user_id) == 2.0:
+        if get_building_score(user_id) >= 2.0 and get_history_score(user_id) >= 2.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)

@@ -93,7 +93,7 @@ def lenkom_history(update, context):
             reply_markup=reply_markup)
         return 'LENKOM_HISTORY_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 4.0 and get_history_score(user_id) == 4.0:
+        if get_building_score(user_id) >= 4.0 and get_history_score(user_id) >= 4.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -113,7 +113,7 @@ def lenkom_building(update, context):
             reply_markup=reply_markup)
         return 'LENKOM_BUILDING_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 4.0 and get_history_score(user_id) == 4.0:
+        if get_building_score(user_id) >= 4.0 and get_history_score(user_id) >= 4.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -128,7 +128,7 @@ def lenkom_history_quizz(update, context):
 
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 4.0 and get_history_score(user_id) == 4.0:
+        if get_building_score(user_id) >= 4.0 and get_history_score(user_id) >= 4.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -166,7 +166,7 @@ def lenkom_building_quizz(update, context):
     user_id = update.effective_chat.id
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 4.0 and get_history_score(user_id) == 4.0:
+        if get_building_score(user_id) >= 4.0 and get_history_score(user_id) >= 4.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -217,7 +217,10 @@ def lenkom_to_electro(update, context):
         update.message.reply_text(response)
         time.sleep(2)
         update.message.reply_text(
-            text=electro_transition_text,
+            text=electro_transition_text)
+        time.sleep(2)
+        update.message.reply_text(
+            text='Будьте аккуратнее рядом с Тверской и дайте знать, когда подойдете к Электротеатру.',
             reply_markup=button)
         return 'LENKOM_LOCATION'
     update.message.reply_text(response)

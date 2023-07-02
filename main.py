@@ -96,13 +96,10 @@ def feedback_receiver(update, context):
     return 'FEEDBACK'
 
 
-def cancel(update, context):
-    """Завершение бота"""
-    user_id = update.effective_chat.id
-    delete_csv_file(user_id)
-    update.message.reply_text(
-        text='До встречи!', reply_markup=ReplyKeyboardRemove())
-    return ConversationHandler.END
+def restart(update, context):
+    """Перезапуск бота"""
+    ConversationHandler.END
+    return start(update, context)
 
 
 def get_rules(update, context):
@@ -217,7 +214,7 @@ def main():
         },
         fallbacks=[CommandHandler('rules', get_rules), 
                    CommandHandler('levels', level_choice_menu),
-                   CommandHandler('cancel', cancel),
+                   CommandHandler('restart', restart),
                    CommandHandler('feedback', feedback_receiver)],
         per_chat=True,
     )

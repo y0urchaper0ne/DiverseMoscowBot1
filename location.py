@@ -44,7 +44,7 @@ def check_location_lenkom(update: Update, context: CallbackContext) -> None:
     target_location = (target_latitude, target_longitude)
     distance_in_meters = distance.distance(user_location, target_location).m
     
-    if distance_in_meters <= 100:
+    if distance_in_meters <= 200:
         return True
     else:
         return False

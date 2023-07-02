@@ -42,7 +42,7 @@ def intro(update, context):
     if str(update.message.text) == 'Начать путешествие 🎭':
         button = ReplyKeyboardMarkup([['Да, интересуюсь']], resize_keyboard=True, one_time_keyboard=True)
         update.message.reply_photo(
-            photo="https://wampi.ru/image/RXB3FF0",
+            photo="https://im.wampi.ru/2023/06/15/louis_start-2.png",
             caption = 'Bonjour!',
             reply_markup=ReplyKeyboardRemove()) 
         time.sleep(2)
@@ -70,7 +70,7 @@ def level_choice(update, context):
             button = ReplyKeyboardMarkup(
                 [['Да, интересуюсь']], resize_keyboard=True, one_time_keyboard=True)
             update.message.reply_photo(
-                photo="https://wampi.ru/image/RXB3FF0",
+                photo="https://im.wampi.ru/2023/06/15/louis_start-2.png",
                 caption = 'Bonjour!', reply_markup=ReplyKeyboardRemove()) 
             time.sleep(2)
             update.message.reply_text(text=louis_1, reply_markup=button)
@@ -111,7 +111,7 @@ def level_choice(update, context):
             text='Про что рассказать вам — историю или здание?', 
             reply_markup=reply_markup)
         return 'ELECTRO_MAIN_MENU'
-    else: update.message.reply_text(text='Похоже, этот уровень тебе еще недоступен!')
+    else: update.message.reply_text(text='Похоже, этот уровень вам еще недоступен!')
 
 
 def intro_two(update, context):
@@ -229,7 +229,7 @@ def bolshoi_history(update, context):
             reply_markup=reply_markup)
         return 'BOLSHOI_HISTORY_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 1.0 and get_history_score(user_id) == 1.0:
+        if get_building_score(user_id) >= 1.0 and get_history_score(user_id) >= 1.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -249,7 +249,7 @@ def bolshoi_building(update, context):
             reply_markup=reply_markup)
         return 'BOLSHOI_BUILDING_QUIZZ'
     elif str(update.message.text) == 'Назад':
-        if get_building_score(user_id) == 1.0 and get_history_score(user_id) == 1.0:
+        if get_building_score(user_id) >= 1.0 and get_history_score(user_id) >= 1.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -262,7 +262,7 @@ def bolshoi_history_quizz(update, context):
     user_id = update.effective_chat.id
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 1.0 and get_history_score(user_id) == 1.0:
+        if get_building_score(user_id) >= 1.0 and get_history_score(user_id) >= 1.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
@@ -295,7 +295,7 @@ def bolshoi_building_quizz(update, context):
     user_id = update.effective_chat.id
     text = str(update.message.text).lower()
     if text == 'назад':
-        if get_building_score(user_id) == 1.0 and get_history_score(user_id) == 1.0:
+        if get_building_score(user_id) >= 1.0 and get_history_score(user_id) >= 1.0:
             main_menu = main_menu_open
         else: main_menu = main_menu_closed
         update.message.reply_text(text='Выберите, про что хотите узнать!', reply_markup=main_menu)
