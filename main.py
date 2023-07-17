@@ -221,7 +221,7 @@ def main():
 
     dispatcher.add_handler(conversation)
 
-    updater.start_polling()
+    updater.start_polling(timeout=123)
     updater.idle()
 
 
